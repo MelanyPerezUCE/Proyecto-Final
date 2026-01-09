@@ -1,18 +1,21 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+
+import { useTheme } from '@/context/theme-context';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  
+
+  const { isDark } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: isDark ? Colors.dark.tint : Colors.light.tint,
         headerShown: false,
         tabBarButton: HapticTab,
       }}>
@@ -20,14 +23,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="despacho"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Despacho',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="local-gas-station" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="historial"
+        options={{
+          title: 'Historial',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="history" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="facturas"
+        options={{
+          title: 'Facturas',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="description" color={color} />,
         }}
       />
     </Tabs>
