@@ -40,7 +40,7 @@ export function CardHome({
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[styles.card, { backgroundColor: isDark ? '#222' : '#f9f9f9' }]}
+      style={[styles.card, { backgroundColor: isDark ? '#222' : '#ffff' }]}
       activeOpacity={0.7}
     >
       <View style={styles.header}>

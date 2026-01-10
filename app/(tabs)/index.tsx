@@ -1,19 +1,33 @@
 
+import { PlateScannerCard } from '@/components/card_foto';
 import { CardHome } from '@/components/cards_home';
+import { getStyles } from '@/components/Styles';
 import { useTheme } from '@/context/theme-context';
-import { Text, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 
 export default function HomeScreen() {
   const { isDark } = useTheme();
-
+  const styles = getStyles(isDark);
+  const [manualPlate, setManualPlate] = useState('');
+  
   return (
-    <View style={{ backgroundColor: isDark ? '#000' : '#F4F5F6', flex: 1 }}>
-      <Text style={{ color: isDark ? '#fff' : '#000' }}>
-        {isDark ? 'Modo oscuro' : 'Modo claro'}
-      </Text>
-      <h1 style={{fontFamily:"sans-serif"}}>Nuevo Despacho</h1>
-      <p style={{fontFamily:"sans-serif", color:'#737A87'}}>Identifique el vehiculo para comenzar</p>
-      <h3 style={{fontFamily:"sans-serif"}}>Ultimo Despacho</h3>
+    <View style={styles.container}>
+      <h1 style={styles.h1}>Nuevo Despacho</h1>
+      <p style={styles.p}>Identifique el vehículo para comenzar</p>
+      <PlateScannerCard
+        onScanPress={() => {
+          // Lógica para abrir la cámara y escanear la placa
+          console.log('Escanear placa');
+        }}
+        onManualSubmit={(plate) => {
+          // Lógica para procesar la placa manual
+          console.log('Placa manual:', plate);
+        }}
+        manualPlate={manualPlate}
+        setManualPlate={setManualPlate}
+      />
+      <h3 style={styles.h3}>Últimos Despachos</h3>
       <CardHome
         title="MBT-882"
         subtitle="Premium • 12.5 Gin"
