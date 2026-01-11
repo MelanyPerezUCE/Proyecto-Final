@@ -11,9 +11,9 @@ export default function HomeScreen() {
       <Text style={{ color: isDark ? '#fff' : '#000' }}>
         {isDark ? 'Modo oscuro' : 'Modo claro'}
       </Text>
-      <h1 style={{fontFamily:"sans-serif"}}>Nuevo Despacho</h1>
-      <p style={{fontFamily:"sans-serif", color:'#737A87'}}>Identifique el vehiculo para comenzar</p>
-      <h3 style={{fontFamily:"sans-serif"}}>Ultimo Despacho</h3>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: isDark ? '#fff' : '#000' }}>Nuevo Despacho</Text>
+      <Text style={{ fontSize: 16, color: '#737A87' }}>Identifique el vehiculo para comenzar</Text>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', color: isDark ? '#fff' : '#000' }}>Ultimo Despacho</Text>
       <CardHome
         title="MBT-882"
         subtitle="Premium • 12.5 Gin"
