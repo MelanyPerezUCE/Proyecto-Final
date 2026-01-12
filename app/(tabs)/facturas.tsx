@@ -1,6 +1,12 @@
 
-import { DateRangeFilter, SearchBar, TransactionListItem } from '@/components/factura';
-import { mockTransactions } from '@/constants/mock-data';
+import {
+  ActionButtons,
+  CustomerDataForm,
+  DateRangeFilter,
+  SearchBar,
+  TransactionListItem
+} from '@/components/factura';
+import { CustomerIdType, mockTransactions } from '@/constants/mock-data';
 import { useTheme } from '@/context/theme-context';
 import { useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -13,6 +19,13 @@ export default function FacturasScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+//Estados del formulario cliente
+  const [idType, setIdType] = useState<CustomerIdType>('RUC');
+  const [identification, setIdentification] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
   //Handlers
   const handleFilter = () => {
@@ -33,6 +46,20 @@ export default function FacturasScreen() {
     } else {
       setSelectedIds(mockTransactions.map(t => t.id));
     }
+  }
+
+  //Handler de acciones
+  const handleGenerateInvoice = () => {
+    console.log('Generar factura:', {
+      transactions: selectedIds,
+      customer: { idType, identification, businessName, email, phone }
+    });
+    alert(`Factura generada para ${selectedIds.length} transacciones.`);
+  }
+
+  const handlePrintTicket = () => {
+    console.log('Imprimir ticket:', selectedIds);
+    alert(`Imprimiendo ticker de ${selectedIds.length} transacciones.`);
   }
 
   const isAllSelected = selectedIds.length === mockTransactions.length && mockTransactions.length > 0;
@@ -86,13 +113,33 @@ export default function FacturasScreen() {
         {/* Right Panel */}
         <View style={styles.rightPanel}>
           <Text style={styles.sectionTitle}>Datos del Cliente</Text>
-          <Text style={styles.selectedCount}>
-            Transacciones seleccionadas: {selectedIds.length}
-          </Text>
+            
+            {/* Formulario de datos del cliente */}
+            <View style={styles.formContainer}>
+            <CustomerDataForm
+              idType={idType}
+              identification={identification}
+              businessName={businessName}
+              email={email}
+              phone={phone}
+              onIdTypeChange={setIdType}
+              onIdentificationChange={setIdentification}
+              onBusinessNameChange={setBusinessName}
+              onEmailChange={setEmail}
+              onPhoneChange={setPhone}
+            />
+          </View>
+
+          {/* Botones de accion */}
+          <ActionButtons
+            selectedCount={selectedIds.length}
+            onGenerateInvoice={handleGenerateInvoice}
+            onPrintTicket={handlePrintTicket}
+          />
         </View>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -137,6 +184,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#11181C',
+    marginBottom: 16,
+  },
+  formContainer: {
+    flex: 1,
   },
   listHeader: {
     flexDirection: 'row',
@@ -179,10 +230,5 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
-  },
-  selectedCount: {
-    fontSize: 14,
-    color: '#687076',
-    marginTop: 8,
   },
 });
