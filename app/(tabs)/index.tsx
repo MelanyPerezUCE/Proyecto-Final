@@ -67,9 +67,6 @@ export default function HomeScreen() {
       setIsAnalyzing(true);
 
       try {
-        // // Esperamos 1.5 segundos usando setTimeout envuelto en Promise
-        // await new Promise((resolve) => setTimeout(resolve, 1500));
-
         GROKService.describeImage(optimized.base64!)
           .then((description) => {
             agregarPlacaActual(description);
