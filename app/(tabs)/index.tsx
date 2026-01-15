@@ -1,32 +1,43 @@
 
 import { PlateScannerCard } from '@/components/card_foto';
 import { CardHome } from '@/components/cards_home';
+import ScanPlate from '@/components/Scaner';
 import { getStyles } from '@/components/Styles';
 import { useTheme } from '@/context/theme-context';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Modal, View } from 'react-native';
+
 
 export default function HomeScreen() {
   const { isDark } = useTheme();
   const styles = getStyles(isDark);
   const [manualPlate, setManualPlate] = useState('');
+    const [showScanner, setShowScanner] = useState(false);
+
   
   return (
     <View style={styles.container}>
       <h1 style={styles.h1}>Nuevo Despacho</h1>
       <p style={styles.p}>Identifique el vehículo para comenzar</p>
-      <PlateScannerCard
-        onScanPress={() => {
-          // Lógica para abrir la cámara y escanear la placa
-          console.log('Escanear placa');
-        }}
-        onManualSubmit={(plate) => {
-          // Lógica para procesar la placa manual
-          console.log('Placa manual:', plate);
-        }}
+        <PlateScannerCard
         manualPlate={manualPlate}
         setManualPlate={setManualPlate}
+        onScanPress={() => setShowScanner(true)}
+        onManualSubmit={(plate) => {
+          console.log('Placa manual:', plate);
+        }}
       />
+{/* MODAL DE ESCÁNER */}
+      <Modal visible={showScanner} animationType="slide">
+        <ScanPlate
+          onPlateDetected={(plate: string) => {
+            setManualPlate(plate); // ← llena el input
+            setShowScanner(false); // ← cierra cámara
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      </Modal>
+
       <h3 style={styles.h3}>Últimos Despachos</h3>
       <CardHome
         title="MBT-882"
