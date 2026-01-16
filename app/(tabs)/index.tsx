@@ -1,182 +1,58 @@
-import { PlateScannerCard } from "@/components/card_foto";
-import { CardHome } from "@/components/cards_home";
-import { getStyles } from "@/components/Styles";
-import { useTheme } from "@/context/theme-context";
-import { agregarPlacaActual } from "@/firebase/database";
-import { GROKService } from "@/services/GROKService";
-import { MaterialIcons } from "@expo/vector-icons";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import * as ImageManipulator from "expo-image-manipulator";
-import { useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+
+import { PlateScannerCard } from '@/components/card_foto';
+import { CardHome } from '@/components/cards_home';
+import { getStyles } from '@/components/Styles';
+import { useTheme } from '@/context/theme-context';
+import { useState } from 'react';
+import { View } from 'react-native';
 
 export default function HomeScreen() {
   const { isDark } = useTheme();
   const styles = getStyles(isDark);
-
-  const [manualPlate, setManualPlate] = useState("");
-  const [openCamera, setOpenCamera] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
-
-  const cameraRef = useRef<CameraView>(null);
-  const [permission, requestPermission] = useCameraPermissions();
-
-  const openCameraHandler = async () => {
-    if (!permission?.granted) {
-      const res = await requestPermission();
-      if (!res.granted) {
-        Alert.alert("Permiso requerido", "Necesitamos acceso a la cámara");
-        return;
-      }
-    }
-    setOpenCamera(true);
-  };
-
-  const takePhoto = async () => {
-    if (!cameraRef.current) return;
-
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.75,
-        base64: true,
-      });
-
-      const optimized = await ImageManipulator.manipulateAsync(
-        photo.uri,
-        [{ resize: { width: 800 } }],
-        { base64: true, compress: 0.75 }
-      );
-
-      const base64 = optimized.base64;
-      if (!base64) throw new Error("No se pudo generar la imagen");
-
-      setPhotoBase64(base64);
-      setOpenCamera(false);
-
-      // Inicia el análisis con Grok
-      setIsAnalyzing(true);
-
-      try {
-        GROKService.describeImage(optimized.base64!)
-          .then((description) => {
-            agregarPlacaActual(description);
-            console.log("Descripción Grok:", description);
-          })
-          .catch((error) => {
-            console.error("Error al describir la imagen:", error);
-          });
-        console.log("IMAGEN BASE64:", optimized.base64);
-      } catch (error: any) {
-        console.error("Error al analizar con Grok:", error);
-      } finally {
-        setIsAnalyzing(false);
-      }
-    } catch (error) {
-      console.error("Error al capturar foto:", error);
-
-      setOpenCamera(false);
-    }
-  };
-
-  const closeCamera = () => {
-    setOpenCamera(false);
-  };
-
+  const [manualPlate, setManualPlate] = useState('');
+  
   return (
-    <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={localStyles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.h1}>Nuevo Despacho</Text>
-        <Text style={styles.p}>Identifique el vehículo para comenzar</Text>
-
-        <PlateScannerCard
-          onScanPress={openCameraHandler}
-          onManualSubmit={(plate) => {
-            console.log("Placa manual:", plate);
-            agregarPlacaActual(plate);
-
-            setManualPlate(plate);
-          }}
-          manualPlate={manualPlate}
-          setManualPlate={setManualPlate}
-        />
-
-        <Text style={styles.h3}>Últimos Despachos</Text>
-
-        <CardHome
-          title="MBT-882"
-          subtitle="Premium • 12.5 Gin"
-          price="$45.00"
-          time="10:42 AM"
-          icon="local-gas-station"
-          iconColor="#ff6b6b"
-        />
-
-        <CardHome
-          title="KLO-194"
-          subtitle="Extra • 15.0 Gal"
-          price="$52.30"
-          time="09:15 AM"
-          icon="local-gas-station"
-          iconColor="#11D452"
-        />
-
-        <CardHome
-          title="PQA-571"
-          subtitle="Diesel • 40 Lts"
-          price="$38.90"
-          time="08:03 AM"
-          icon="directions-car"
-          iconColor="#E5AF08"
-        />
-      </ScrollView>
-
-      {/* Modal de la cámara */}
-      <Modal visible={openCamera} animationType="slide">
-        <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
-
-        {/* Botón Capturar */}
-        <TouchableOpacity
-          onPress={takePhoto}
-          style={localStyles.captureButton}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="camera-alt" size={36} color="white" />
-        </TouchableOpacity>
-
-        {/* Botón Cerrar */}
-        <TouchableOpacity
-          onPress={closeCamera}
-          style={localStyles.closeButton}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="close" size={32} color="white" />
-        </TouchableOpacity>
-      </Modal>
-
-      {/* Modal de carga durante el análisis */}
-      <Modal transparent={true} visible={isAnalyzing} animationType="fade">
-        <View style={loadingStyles.overlay}>
-          <View style={loadingStyles.container}>
-            <ActivityIndicator size="large" color="#00C853" />
-            <Text style={loadingStyles.text}>Leyendo placa...</Text>
-          </View>
-        </View>
-      </Modal>
-    </>
+    <View style={styles.container}>
+      <h1 style={styles.h1}>Nuevo Despacho</h1>
+      <p style={styles.p}>Identifique el vehículo para comenzar</p>
+      <PlateScannerCard
+        onScanPress={() => {
+          // Lógica para abrir la cámara y escanear la placa
+          console.log('Escanear placa');
+        }}
+        onManualSubmit={(plate) => {
+          // Lógica para procesar la placa manual
+          console.log('Placa manual:', plate);
+        }}
+        manualPlate={manualPlate}
+        setManualPlate={setManualPlate}
+      />
+      <h3 style={styles.h3}>Últimos Despachos</h3>
+      <CardHome
+        title="MBT-882"
+        subtitle="Premium • 12.5 Gin"
+        price="$45.00"
+        time="10:42 AM"
+        icon="local-gas-station"
+        iconColor="#ff6b6b" 
+      />
+      <CardHome
+        title="MBT-882"
+        subtitle="Premium • 12.5 Gin"
+        price="$45.00"
+        time="10:42 AM"
+        icon="local-gas-station"
+        iconColor="#11D452" 
+      />
+      <CardHome
+        title="MBT-882"
+        subtitle="Premium • 12.5 Gin"
+        price="$45.00"
+        time="10:42 AM"
+        icon="directions-car"
+        iconColor="#E5AF08" 
+      />
+    </View>
   );
 }
 
