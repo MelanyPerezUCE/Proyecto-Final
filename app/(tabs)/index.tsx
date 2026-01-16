@@ -197,7 +197,7 @@ const localStyles = StyleSheet.create({
     bottom: 40,
     alignSelf: "center",
 
-    // // Efectos visuales opcionales pero recomendados
+    // Por definir
     borderWidth: 3,
     borderColor: "rgba(255, 255, 255, 0.6)",
     // shadowColor: "#000",
