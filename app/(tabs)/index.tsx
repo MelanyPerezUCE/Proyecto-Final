@@ -2,12 +2,18 @@ import { PlateScannerCard } from "@/components/card_foto";
 import { CardHome } from "@/components/cards_home";
 import { getStyles } from "@/components/Styles";
 import { useTheme } from "@/context/theme-context";
-import { agregarPlacaActual } from "@/firebase/database";
+import {
+  agregarPlacaActual,
+  obtenerUltimosDespachos,
+} from "@/firebase/database";
+import { DespachoDTO } from "@/services/estructuraDespacho";
 import { GROKService } from "@/services/GROKService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
-import { useRef, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useRef, useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +36,28 @@ export default function HomeScreen() {
 
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
+
+  const [listaDespacho, setListaDespacho] = useState<DespachoDTO[]>([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const cargarDespachos = async () => {
+        try {
+          const despachos = await obtenerUltimosDespachos();
+          console.log(despachos);
+          setListaDespacho(despachos);
+        } catch (error) {
+          console.error("Error al obtener despachos:", error);
+        }
+      };
+
+      cargarDespachos();
+
+      return () => {
+        // cleanup si lo necesitas
+      };
+    }, [])
+  );
 
   const openCameraHandler = async () => {
     if (!permission?.granted) {
@@ -67,25 +95,29 @@ export default function HomeScreen() {
       setIsAnalyzing(true);
 
       try {
-        // // Esperamos 1.5 segundos usando setTimeout envuelto en Promise
-        // await new Promise((resolve) => setTimeout(resolve, 1500));
-
         GROKService.describeImage(optimized.base64!)
           .then((description) => {
+            if (description === "No legible") {
+              Alert.alert(
+                "Placa no legible",
+                "No se pudo leer la placa del vehículo. Intenta nuevamente."
+              );
+              return;
+            }
             agregarPlacaActual(description);
-            console.log("Descripción Grok:", description);
+
+            router.push("/(tabs)/despacho");
           })
           .catch((error) => {
-            console.error("Error al describir la imagen:", error);
+            Alert.alert("Error al describir la imagen");
           });
-        console.log("IMAGEN BASE64:", optimized.base64);
       } catch (error: any) {
-        console.error("Error al analizar con Grok:", error);
+        Alert.alert("Error al analizar con Grok");
       } finally {
         setIsAnalyzing(false);
       }
     } catch (error) {
-      console.error("Error al capturar foto:", error);
+      Alert.alert("Error al capturar foto");
 
       setOpenCamera(false);
     }
@@ -108,10 +140,17 @@ export default function HomeScreen() {
         <PlateScannerCard
           onScanPress={openCameraHandler}
           onManualSubmit={(plate) => {
-            console.log("Placa manual:", plate);
+            if (plate.length < 7) {
+              Alert.alert(
+                "Placa inválida",
+                "La placa ingresada es demasiado corta. Verifícala e intenta nuevamente."
+              );
+              return;
+            }
             agregarPlacaActual(plate);
 
-            setManualPlate(plate);
+            setManualPlate("");
+            router.push("/(tabs)/despacho");
           }}
           manualPlate={manualPlate}
           setManualPlate={setManualPlate}
@@ -119,7 +158,7 @@ export default function HomeScreen() {
 
         <Text style={styles.h3}>Últimos Despachos</Text>
 
-        <CardHome
+        {/* <CardHome
           title="MBT-882"
           subtitle="Premium • 12.5 Gin"
           price="$45.00"
@@ -144,7 +183,25 @@ export default function HomeScreen() {
           time="08:03 AM"
           icon="directions-car"
           iconColor="#E5AF08"
-        />
+        /> */}
+
+        {listaDespacho.map((item, index) => (
+          <CardHome
+            key={index}
+            title={item.Placa}
+            subtitle={`${item.Tipo_Combustible} • ${item.Galones} Gal`}
+            price={`$${parseFloat(item.Precio).toFixed(2)}`}
+            time={item.Hora}
+            icon="local-gas-station"
+            iconColor={
+              item.Tipo_Combustible === "Premium"
+                ? "#ff4d4d" // 🔴 rojo
+                : item.Tipo_Combustible === "Extra"
+                ? "#11D452" // 🟢 verde
+                : "#E5AF08" // 🟡 diesel
+            }
+          />
+        ))}
       </ScrollView>
 
       {/* Modal de la cámara */}

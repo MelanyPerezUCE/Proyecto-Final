@@ -1,8 +1,9 @@
 // src/services/GROKService.ts
+
 import OpenAI from "openai";
 
 const API_KEY =
-  "xai-6qfq2wRN098OA2mo4F548CxAHfAytEpv2LcOgCGb3gubTHbWQXt3DUDEnwwR9N0dfmFXhubkcx4REzzc";
+  "xai-eayvzNL9xIJaNaZIe8ZgORwdMEiJgUyo8BviPp0vIc7IVFdA2gWcFvGvRMVBpmWlMjp2lzwQ4MHfKk6B";
 
 if (!API_KEY) {
   throw new Error("Falta la variable EXPO_PUBLIC_GROK_API_KEY");
@@ -70,8 +71,6 @@ Respuesta máxima 10 caracteres.`,
 
       return description.trim();
     } catch (error: unknown) {
-      console.error("Error Grok Vision:", error);
-
       // Manejo más seguro del error
       const errorMessage =
         error instanceof Error

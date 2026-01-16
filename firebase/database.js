@@ -1,15 +1,16 @@
 // firebase/database.js
-import app from "./config";
 import {
+  get,
   getDatabase,
-  ref,
-  push,
+  limitToLast,
   onValue,
-  set,
-  remove,
+  push,
+  query,
+  ref,
   serverTimestamp,
-  update,
+  set,
 } from "firebase/database";
+import app from "./config";
 
 const db = getDatabase(app);
 
@@ -32,6 +33,30 @@ export const agregarDespacho = async (despachoData) => {
   }
 };
 
+export const obtenerUltimosDespachos = async () => {
+  try {
+    const q = query(despachosRef, limitToLast(3));
+    const snapshot = await get(q);
+
+    if (!snapshot.exists()) {
+      return [];
+    }
+
+    const data = snapshot.val();
+
+    // Convertir objeto → array
+    const despachos = Object.entries(data).map(([id, value]) => ({
+      id,
+      ...value,
+    }));
+
+    return despachos;
+  } catch (error) {
+    console.error("Error leyendo despachos:", error);
+    throw error;
+  }
+};
+
 // Escuchar todos los despachos en tiempo real
 export const escucharDespachos = (callback) => {
   return onValue(despachosRef, (snapshot) => {
@@ -42,23 +67,6 @@ export const escucharDespachos = (callback) => {
     callback(despachosArray);
   });
 };
-
-// // Guardar la placa actual
-// export const agregarPlacaActual = async (placaData) => {
-//   try {
-//     const newRef = push(PlacaActualRef);
-//     await set(newRef, {
-//       ...placaData,
-//       createdAt: serverTimestamp(),
-//       updatedAt: serverTimestamp(),
-//     });
-//     console.log("Placa guardada:", newRef.key);
-//     return newRef.key;
-//   } catch (error) {
-//     console.error("Error guardando placa:", error);
-//     throw error;
-//   }
-// };
 
 // Referencia a la raíz de la base de datos
 const rootRef = ref(db, "PlacaActual"); // ← ruta vacía = raíz
