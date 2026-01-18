@@ -1,5 +1,3 @@
-// src/services/GROKService.ts
-
 import OpenAI from "openai";
 
 const API_KEY =
@@ -12,7 +10,7 @@ if (!API_KEY) {
 const client = new OpenAI({
   baseURL: "https://api.x.ai/v1",
   apiKey: API_KEY,
-  dangerouslyAllowBrowser: true, // Necesario en React Native / Expo
+  dangerouslyAllowBrowser: true,
 });
 
 export class GROKService {
@@ -21,7 +19,6 @@ export class GROKService {
 
     if (!base64Image.startsWith("data:")) {
       formattedBase64 = `data:image/jpeg;base64,${base64Image}`;
-      // Si usas PNG cambia a: `data:image/png;base64,${base64Image}`
     }
 
     try {
@@ -71,7 +68,6 @@ Respuesta máxima 10 caracteres.`,
 
       return description.trim();
     } catch (error: unknown) {
-      // Manejo más seguro del error
       const errorMessage =
         error instanceof Error
           ? error.message

@@ -1,4 +1,3 @@
-// firebase/database.js
 import {
   get,
   getDatabase,
@@ -14,7 +13,7 @@ import app from "./config";
 
 const db = getDatabase(app);
 
-export const despachosRef = ref(db, "despachos"); // ruta principal para tus despachos
+export const despachosRef = ref(db, "despachos");
 
 // Guardar un nuevo despacho (push genera ID automático)
 export const agregarDespacho = async (despachoData) => {
@@ -44,7 +43,6 @@ export const obtenerUltimosDespachos = async () => {
 
     const data = snapshot.val();
 
-    // Convertir objeto → array
     const despachos = Object.entries(data).map(([id, value]) => ({
       id,
       ...value,
@@ -71,20 +69,17 @@ export const escucharDespachos = () => {
         : [];
 
       resolve(despachosArray);
-      unsubscribe(); // deja de escuchar
+      unsubscribe();
     });
   });
 };
 
 // Referencia a la raíz de la base de datos
-const rootRef = ref(db, "PlacaActual"); // ← ruta vacía = raíz
+const rootRef = ref(db, "PlacaActual");
 
 export const agregarPlacaActual = async (placaData) => {
   try {
-    await set(
-      rootRef,
-      placaData // guardamos como campo "placaActual"
-    );
+    await set(rootRef, placaData);
 
     console.log("Placa guardada directamente en la raíz");
     return true;
@@ -100,9 +95,9 @@ const placaActualRef = ref(db, "PlacaActual");
 export const escucharPlacaActual = () => {
   return new Promise((resolve) => {
     const unsubscribe = onValue(placaActualRef, (snapshot) => {
-      const valor = snapshot.val(); // null si no existe
-      resolve(valor); // devuelve el valor
-      unsubscribe(); // deja de escuchar después de leer
+      const valor = snapshot.val();
+      resolve(valor);
+      unsubscribe();
     });
   });
 };

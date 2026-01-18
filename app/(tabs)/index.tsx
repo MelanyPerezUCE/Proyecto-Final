@@ -52,9 +52,7 @@ export default function HomeScreen() {
 
       cargarDespachos();
 
-      return () => {
-        // cleanup si lo necesitas
-      };
+      return () => {};
     }, [])
   );
 
@@ -167,10 +165,10 @@ export default function HomeScreen() {
             icon="local-gas-station"
             iconColor={
               item.Tipo_Combustible === "Premium"
-                ? "#ff4d4d" // 🔴 rojo
+                ? "#ff4d4d"
                 : item.Tipo_Combustible === "Extra"
-                ? "#11D452" // 🟢 verde
-                : "#E5AF08" // 🟡 diesel
+                ? "#11D452"
+                : "#E5AF08"
             }
           />
         ))}
@@ -217,8 +215,6 @@ const localStyles = StyleSheet.create({
     paddingBottom: 60,
   },
   captureButton: {
-    // position: "absolute",
-    // bottom: 60,
     width: 70,
     height: 70,
     borderRadius: 40,
@@ -228,15 +224,8 @@ const localStyles = StyleSheet.create({
     position: "absolute",
     bottom: 40,
     alignSelf: "center",
-
-    // // Efectos visuales opcionales pero recomendados
     borderWidth: 3,
     borderColor: "rgba(255, 255, 255, 0.6)",
-    // shadowColor: "#000",
-    // shadowOffset: { width: 0, height: 4 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 6,
-    // elevation: 8,
   },
   captureText: {
     color: "white",
@@ -245,15 +234,14 @@ const localStyles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 40, // o 50-60 según tu safe area
+    top: 40,
     right: 20,
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(0, 0, 0, 0.45)", // semi-transparente negro
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
     justifyContent: "center",
     alignItems: "center",
-    // Opcional: borde sutil
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 0.3)",
   },

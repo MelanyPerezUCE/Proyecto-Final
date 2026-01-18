@@ -35,7 +35,6 @@ export function PlateScannerCard({
 
   useFocusEffect(
     React.useCallback(() => {
-      // cada vez que esta pantalla se muestra
       setManualPlate?.("");
 
       return () => {};
@@ -51,7 +50,7 @@ export function PlateScannerCard({
     >
       {/* Botón principal grande - Escanear */}
       <TouchableOpacity
-        style={[styles.scanButton, { backgroundColor: "#00C853" }]} // Verde material bien brillante
+        style={[styles.scanButton, { backgroundColor: "#00C853" }]}
         onPress={onScanPress}
         activeOpacity={0.8}
       >
@@ -131,7 +130,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
-    // Sombra suave
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -143,7 +141,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(255, 255, 255, 0.3)", // Círculo más opaco
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
