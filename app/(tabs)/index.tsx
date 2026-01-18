@@ -1,5 +1,5 @@
-import { PlateScannerCard } from "@/components/card_foto";
-import { CardHome } from "@/components/cards_home";
+import { PlateScannerCard } from "@/components/index/card_foto";
+import { CardHome } from "@/components/index/cards_home";
 import { getStyles } from "@/components/Styles";
 import { useTheme } from "@/context/theme-context";
 import {
@@ -156,33 +156,6 @@ export default function HomeScreen() {
         />
 
         <Text style={styles.h3}>Últimos Despachos</Text>
-
-        {/* <CardHome
-          title="MBT-882"
-          subtitle="Premium • 12.5 Gin"
-          price="$45.00"
-          time="10:42 AM"
-          icon="local-gas-station"
-          iconColor="#ff6b6b"
-        />
-
-        <CardHome
-          title="KLO-194"
-          subtitle="Extra • 15.0 Gal"
-          price="$52.30"
-          time="09:15 AM"
-          icon="local-gas-station"
-          iconColor="#11D452"
-        />
-
-        <CardHome
-          title="PQA-571"
-          subtitle="Diesel • 40 Lts"
-          price="$38.90"
-          time="08:03 AM"
-          icon="directions-car"
-          iconColor="#E5AF08"
-        /> */}
 
         {listaDespacho.map((item, index) => (
           <CardHome
