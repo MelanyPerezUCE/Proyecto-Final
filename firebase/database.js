@@ -57,14 +57,22 @@ export const obtenerUltimosDespachos = async () => {
   }
 };
 
-// Escuchar todos los despachos en tiempo real
-export const escucharDespachos = (callback) => {
-  return onValue(despachosRef, (snapshot) => {
-    const data = snapshot.val();
-    const despachosArray = data
-      ? Object.entries(data).map(([id, value]) => ({ id, ...value }))
-      : [];
-    callback(despachosArray);
+// Escuchar todos los despachos SIN callback
+export const escucharDespachos = () => {
+  return new Promise((resolve) => {
+    const unsubscribe = onValue(despachosRef, (snapshot) => {
+      const data = snapshot.val();
+
+      const despachosArray = data
+        ? Object.entries(data).map(([id, value]) => ({
+            id,
+            ...value,
+          }))
+        : [];
+
+      resolve(despachosArray);
+      unsubscribe(); // deja de escuchar
+    });
   });
 };
 
@@ -89,17 +97,12 @@ export const agregarPlacaActual = async (placaData) => {
 // Referencia al nodo donde guardaste la placa
 const placaActualRef = ref(db, "PlacaActual");
 
-// Función para escuchar cambios en tiempo real
-export const escucharPlacaActual = (callback) => {
-  const unsubscribe = onValue(placaActualRef, (snapshot) => {
-    const valor = snapshot.val(); // null si no existe aún
-
-    console.log("Placa actual leída en tiempo real:", valor);
-
-    // Llama al callback con el valor
-    callback(valor);
+export const escucharPlacaActual = () => {
+  return new Promise((resolve) => {
+    const unsubscribe = onValue(placaActualRef, (snapshot) => {
+      const valor = snapshot.val(); // null si no existe
+      resolve(valor); // devuelve el valor
+      unsubscribe(); // deja de escuchar después de leer
+    });
   });
-
-  // Retorna la función para cancelar la escucha cuando ya no la necesites
-  return unsubscribe;
 };

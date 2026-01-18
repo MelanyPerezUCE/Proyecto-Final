@@ -44,7 +44,6 @@ export default function HomeScreen() {
       const cargarDespachos = async () => {
         try {
           const despachos = await obtenerUltimosDespachos();
-          console.log(despachos);
           setListaDespacho(despachos);
         } catch (error) {
           console.error("Error al obtener despachos:", error);
