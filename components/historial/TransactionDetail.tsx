@@ -1,115 +1,241 @@
-import { useTheme } from '@/context/theme-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from "@/context/theme-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Transaction } from "./TransactionList";
 
 interface Props {
-  transaction: any;
-  onBack: () => void;
-  showBackButton: boolean;
+  transaction: Transaction;
 }
 
-export default function TransactionDetail({ transaction, onBack, showBackButton }: Props) {
+export default function TransactionDetail({ transaction }: Props) {
   const { isDark } = useTheme();
 
-  if (!transaction) return null;
+  const bgMain = isDark ? "#000" : "#fff";
+  const bgCard = isDark ? "#141414" : "#fff";
 
-  // --- COLORES CORREGIDOS A "SUPER DARK" ---
-  // Tarjetas gris muy oscuro para contrastar con el fondo negro
-  const cardBg = isDark ? '#141414' : '#fff';
-  const textColor = isDark ? '#fff' : '#1a2e35';
-  const subTextColor = isDark ? '#9CA3AF' : '#666';
-  // Bordes oscuros sutiles
-  const borderColor = isDark ? '#2C2C2C' : '#eee';
-  
+  const textPrimary = isDark ? "#fff" : "#333";
+  const textSecondary = isDark ? "#aaa" : "#666";
+  const textGreen = "#00C853";
+
+  const borderColor = isDark ? "#333" : "#eee";
+
+  const badgeBg = isDark ? "rgba(0, 200, 83, 0.1)" : "#E8F5E9";
+  const badgeText = "#2E7D32";
+
+  const infoBg = isDark ? "rgba(33, 150, 243, 0.15)" : "#E3F2FD";
+  const infoText = isDark ? "#90CAF9" : "#1565C0";
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
-      
-      {showBackButton && (
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <MaterialIcons name="arrow-back" size={24} color={textColor} />
-          <Text style={[styles.backText, { color: textColor }]}>Regresar</Text>
-        </TouchableOpacity>
-      )}
-
+    <ScrollView
+      style={[styles.container, { backgroundColor: bgMain }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* 1. ENCABEZADO CON TÍTULO Y BADGE */}
       <View style={styles.headerRow}>
-        <Text style={[styles.mainTitle, { color: textColor }]}>Detalle de Transacción</Text>
-        <View style={styles.completedBadge}>
-            <Text style={styles.completedText}>COMPLETADO</Text>
+        <Text style={[styles.headerTitle, { color: textPrimary }]}>
+          Detalle de Transacción
+        </Text>
+        <View style={[styles.statusBadge, { backgroundColor: badgeBg }]}>
+          <Text
+            style={[
+              styles.statusText,
+              { color: isDark ? "#4CAF50" : badgeText },
+            ]}
+          >
+            COMPLETADO
+          </Text>
         </View>
       </View>
 
-      <View style={[styles.detailCardLarge, { backgroundColor: cardBg, borderColor: borderColor }]}>
-          <Text style={[styles.detailLabelCenter, { color: subTextColor }]}>Monto Total</Text>
-          <Text style={[styles.detailAmountBig, { color: textColor }]}>{transaction.monto}</Text>
-          <Text style={[styles.detailTicket, { color: subTextColor }]}>
-            Ticket {transaction.ticket} • {transaction.fecha}, {transaction.hora}
-          </Text>
+      {/* 2. TARJETA PRINCIPAL (MONTO) */}
+      <View
+        style={[
+          styles.mainCard,
+          { backgroundColor: bgCard, borderColor: borderColor },
+        ]}
+      >
+        <Text style={{ color: textSecondary, fontSize: 12, marginBottom: 5 }}>
+          Monto Total
+        </Text>
+        <Text style={[styles.amountText, { color: textPrimary }]}>
+          {transaction.monto}
+        </Text>
+        <Text style={{ color: textSecondary, fontSize: 12, marginTop: 5 }}>
+          Ticket {transaction.ticket} • {transaction.fecha}, {transaction.hora}
+        </Text>
       </View>
 
-      <Text style={[styles.subHeading, { color: subTextColor }]}>INFORMACIÓN DE CARGA</Text>
-      
+      {/* 3. GRILLA DE INFORMACIÓN */}
+      <Text style={[styles.sectionLabel, { color: textSecondary }]}>
+        INFORMACIÓN DE CARGA
+      </Text>
+
       <View style={styles.gridContainer}>
-          <InfoBox label="Combustible" value={transaction.combustible} isDark={isDark} />
-          <InfoBox label="Bomba" value={transaction.bomba} isDark={isDark} />
-          <InfoBox label="Litros" value={transaction.litros} isDark={isDark} />
-          <InfoBox label="Precio/Litro" value={transaction.precioLitro || "$23.45"} isDark={isDark} />
+        {/* Fila 1 */}
+        <View style={styles.row}>
+          <InfoBox
+            label="Combustible"
+            value={transaction.combustible}
+            isDark={isDark}
+            width="48%"
+            boldValue
+          />
+          <InfoBox
+            label="Bomba"
+            value={`#${transaction.bomba.replace("#", "")}`}
+            isDark={isDark}
+            width="48%"
+            boldValue
+          />
+        </View>
+        {/* Fila 2 */}
+        <View style={styles.row}>
+          <InfoBox
+            label="Litros"
+            value={transaction.litros.replace("Gal", "Galones")}
+            isDark={isDark}
+            width="48%"
+            boldValue
+          />
+          {/* Dato simulado de precio unitario visualmente */}
+          <InfoBox
+            label="Precio/Galón"
+            value="$4.00"
+            isDark={isDark}
+            width="48%"
+            boldValue
+          />
+        </View>
       </View>
 
-      <Text style={[styles.subHeading, { color: subTextColor }]}>PAGO</Text>
-      
-      <View style={[styles.paymentCard, { backgroundColor: cardBg, borderColor: borderColor }]}>
-          <View style={styles.iconCircle}>
-             <MaterialIcons name="attach-money" size={24} color="#00C853" />
-          </View>
-          <View>
-              <Text style={[styles.paymentMethodTitle, { color: textColor }]}>{transaction.metodo}</Text>
-              <Text style={{ fontSize: 12, color: subTextColor }}>Pago directo en caja</Text>
-          </View>
-      </View>
-
-      <View style={styles.infoBlueBox}>
-          <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
-          <Text style={styles.infoBlueText}>
-             Esta transacción ya ha sido facturada. Para ver la factura, diríjase al módulo de facturación.
+      {/* 4. SECCIÓN PAGO */}
+      <Text style={[styles.sectionLabel, { color: textSecondary }]}>PAGO</Text>
+      <View
+        style={[
+          styles.paymentCard,
+          { backgroundColor: bgCard, borderColor: borderColor },
+        ]}
+      >
+        <View style={styles.iconCircle}>
+          <MaterialIcons name="payments" size={24} color="#00C853" />
+        </View>
+        <View>
+          <Text style={[styles.paymentTitle, { color: textPrimary }]}>
+            {transaction.metodo}
           </Text>
+          <Text style={{ color: textSecondary, fontSize: 12 }}>
+            Pago directo en caja
+          </Text>
+        </View>
       </View>
 
-      {/* --- SE ELIMINARON LOS BOTONES DE REIMPRIMIR, COMPARTIR Y ENVIAR AQUÍ --- */}
-
+      {/* 5. FOOTER INFO AZUL */}
+      <View style={[styles.infoFooter, { backgroundColor: infoBg }]}>
+        <MaterialIcons
+          name="info-outline"
+          size={20}
+          color={infoText}
+          style={{ marginRight: 10 }}
+        />
+        <Text style={[styles.infoFooterText, { color: infoText }]}>
+          Esta transacción ya ha sido facturada. Para ver la factura, diríjase
+          al módulo de facturación.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
-const InfoBox = ({ label, value, isDark }: { label: string, value: string, isDark: boolean }) => (
-    <View style={[styles.infoBox, { 
-        // Color de tarjeta gris oscuro
-        backgroundColor: isDark ? '#141414' : '#fff', 
-        borderColor: isDark ? '#2C2C2C' : '#eee' 
-    }]}>
-        <Text style={{ fontSize: 12, color: isDark ? '#9CA3AF' : '#888', marginBottom: 4 }}>{label}</Text>
-        <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDark ? '#fff' : '#000' }}>{value}</Text>
-    </View>
+const InfoBox = ({ label, value, isDark, width, boldValue }: any) => (
+  <View
+    style={[
+      styles.infoBox,
+      {
+        width: width,
+        backgroundColor: isDark ? "#141414" : "#fff",
+        borderColor: isDark ? "#333" : "#eee",
+      },
+    ]}
+  >
+    <Text
+      style={{ color: isDark ? "#aaa" : "#666", fontSize: 12, marginBottom: 4 }}
+    >
+      {label}
+    </Text>
+    <Text
+      style={{
+        color: isDark ? "#fff" : "#333",
+        fontSize: 16,
+        fontWeight: boldValue ? "bold" : "normal",
+      }}
+    >
+      {value}
+    </Text>
+  </View>
 );
 
 const styles = StyleSheet.create({
-  backButton: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-  backText: { fontSize: 16, marginLeft: 10, fontWeight: '600' },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  mainTitle: { fontSize: 20, fontWeight: 'bold' },
-  completedBadge: { backgroundColor: '#DCFCE7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  completedText: { color: '#00C853', fontSize: 10, fontWeight: 'bold', letterSpacing: 0.5 },
-  detailCardLarge: { padding: 30, borderRadius: 20, alignItems: 'center', borderWidth: 1, marginBottom: 25 },
-  detailAmountBig: { fontSize: 42, fontWeight: 'bold', marginVertical: 5 },
-  detailLabelCenter: { fontSize: 12, fontWeight: '600' },
-  detailTicket: { fontSize: 12, marginTop: 5 },
-  subHeading: { fontSize: 12, fontWeight: 'bold', marginBottom: 10, letterSpacing: 0.5, textTransform: 'uppercase' },
-  gridContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 25 },
-  infoBox: { width: '48%', padding: 15, borderWidth: 1, borderRadius: 12 },
-  paymentCard: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 12, borderWidth: 1, marginBottom: 15 },
-  iconCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
-  paymentMethodTitle: { fontWeight: 'bold', fontSize: 16 },
-  infoBlueBox: { flexDirection: 'row', backgroundColor: '#EFF6FF', padding: 15, borderRadius: 12, borderWidth: 1, borderColor: '#DBEAFE', marginBottom: 25 },
-  infoBlueText: { flex: 1, marginLeft: 10, color: '#1E40AF', fontSize: 12, lineHeight: 18 },
-  // --- SE ELIMINARON LOS ESTILOS printBtn, printBtnText, actionRow y outlineBtn ---
+  container: { flex: 1, paddingLeft: 20 },
+
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  headerTitle: { fontSize: 18, fontWeight: "bold" },
+  statusBadge: { paddingVertical: 4, paddingHorizontal: 12, borderRadius: 12 },
+  statusText: { fontSize: 10, fontWeight: "bold", letterSpacing: 0.5 },
+
+  mainCard: {
+    alignItems: "center",
+    padding: 25,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 25,
+  },
+  amountText: { fontSize: 36, fontWeight: "bold", letterSpacing: -1 },
+
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  gridContainer: { marginBottom: 20 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  infoBox: { padding: 15, borderRadius: 12, borderWidth: 1 },
+
+  paymentCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 25,
+  },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,200,83,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
+  paymentTitle: { fontSize: 15, fontWeight: "bold", marginBottom: 2 },
+
+  infoFooter: {
+    flexDirection: "row",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  infoFooterText: { flex: 1, fontSize: 12, lineHeight: 18 },
 });
