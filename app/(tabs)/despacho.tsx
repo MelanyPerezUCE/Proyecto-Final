@@ -181,17 +181,6 @@ export default function DespachoScreen() {
                 <MaterialIcons name="directions-car" size={20} color={mutedText} />
               </View>
             </View>
-
-            <Pressable
-              style={({ pressed }) => [
-                styles.qrButton,
-                { backgroundColor: isDark ? '#223027' : '#EEF0F2' },
-                pressed && { opacity: 0.7 },
-              ]}
-              onPress={() => Alert.alert('QR', 'Aquí puedes conectar tu lector QR.')}
-            >
-              <MaterialIcons name="qr-code-scanner" size={22} color={colors.text} />
-            </Pressable>
           </View>
 
           {/* Control de Subsidio (simplificado a barra de progreso) */}
