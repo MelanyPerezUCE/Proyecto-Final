@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,68 +10,127 @@ import {
   View,
 } from 'react-native';
 
+import { Field } from '@/components/despacho/Field';
+import { PaymentButton } from '@/components/despacho/PaymentButton';
+import { FuelKey, FUELS, PaymentMethod } from '@/constants/despacho';
 import { Colors } from '@/constants/theme';
 import { useTheme } from '@/context/theme-context';
+import { agregarDespacho, escucharPlacaActual } from '@/firebase/database';
+import {
+  buildDespachoDTO,
+  calculateVolumeGallons,
+  parseCurrencyToNumber,
+} from '@/services/despacho';
 
 /**
  * Pantalla: Despacho de Combustible
- * - Basada en tu maqueta HTML, adaptada a React Native (sin etiquetas HTML).
- * - Aquí dejamos estados "mock" (demo) para que puedas conectar API luego.
+ *
+ * Objetivo (Proyecto Final):
+ * - Mostrar una UI completa para registrar un despacho.
+ * - Precargar la placa desde Firebase ("PlacaActual").
+ * - Guardar el despacho en Firebase (nodo "despachos").
+ *
+ * Nota:
+ * - La lógica se separó en: constants (listas), services (cálculos/DTO) y components (Field/PaymentButton)
+ *   para alinearnos a la estructura del proyecto de Melany.
  */
 export default function DespachoScreen() {
   const { isDark } = useTheme();
   const colors = Colors[isDark ? 'dark' : 'light'];
 
-  // ======= Estados (por ahora DEMO / luego conectas a backend) =======
-  const [plate, setPlate] = useState('PBA-1234');
-  const [driverName, setDriverName] = useState('Juan Pérez');
+  // ======= Estados (UI / Formulario) =======
+  const [plate, setPlate] = useState('');
+  const [driverName, setDriverName] = useState('');
   const [driverId, setDriverId] = useState('');
   const [vehicleModel, setVehicleModel] = useState('');
   const [vehicleColor, setVehicleColor] = useState('');
 
   // Combustible seleccionado
-  const fuels = useMemo(
-    () => [
-      { key: 'super', label: 'Súper', detail: '92 Oct', pricePerGal: 4.15, icon: 'local-gas-station' as const },
-      { key: 'extra', label: 'Extra', detail: '85 Oct', pricePerGal: 2.4, icon: 'local-gas-station' as const },
-      { key: 'diesel', label: 'Diésel', detail: 'Premium', pricePerGal: 1.75, icon: 'oil-barrel' as const },
-    ],
-    [],
-  );
-  const [selectedFuelKey, setSelectedFuelKey] = useState<'super' | 'extra' | 'diesel'>('super');
+  const fuels = useMemo(() => FUELS, []);
+  const [selectedFuelKey, setSelectedFuelKey] = useState<FuelKey>('premium');
 
   // Pago
-  const [paymentMethod, setPaymentMethod] = useState<'efectivo' | 'tarjeta' | 'rfid'>('efectivo');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('efectivo');
 
-  // Monto a pagar (string para TextInput)
+  // Monto (string para TextInput)
   const [amount, setAmount] = useState('20.00');
 
-  // Subsidio (demo)
+  // Subsidio (demo: luego podrías traerlo desde backend o una regla)
   const availableGallons = 15.0;
   const usedPercent = 75; // %
 
+  // ======= Precargar placa desde Firebase =======
+  useEffect(() => {
+    // En Home se guarda "PlacaActual" (al leer desde cámara o manual)
+    // Aquí solo la leemos para precargar el input.
+    escucharPlacaActual()
+      .then((savedPlate) => {
+        if (typeof savedPlate === 'string') setPlate(savedPlate);
+      })
+      .catch(() => {
+        // Si falla, no bloqueamos la pantalla; el usuario puede ingresarla manual.
+      });
+  }, []);
+
   // ======= Cálculos =======
   const selectedFuel = fuels.find((f) => f.key === selectedFuelKey)!;
+  const numericAmount = parseCurrencyToNumber(amount);
+  const volume = calculateVolumeGallons(numericAmount, selectedFuel.pricePerGal);
 
-  const numericAmount = Number(amount.replace(',', '.')) || 0;
-  const volume = selectedFuel.pricePerGal > 0 ? numericAmount / selectedFuel.pricePerGal : 0;
-
-  // ======= Colores =======
+  // ======= Colores (superficies) =======
   const bg = isDark ? '#102216' : '#F6F8F6';
   const surface = isDark ? '#1c2e24' : '#ffffff';
   const border = isDark ? '#2b3b33' : '#E6E8EB';
   const mutedText = isDark ? '#A6B0AA' : '#737A87';
 
+  const onSubmitDispatch = async () => {
+    // Validaciones mínimas
+    if (!plate.trim()) {
+      Alert.alert('Falta la placa', 'Ingresa o escanea una placa para continuar.');
+      return;
+    }
+    if (!driverName.trim()) {
+      Alert.alert('Falta el conductor', 'Ingresa el nombre del conductor.');
+      return;
+    }
+    if (numericAmount <= 0) {
+      Alert.alert('Monto inválido', 'Ingresa un monto mayor a 0.');
+      return;
+    }
+
+    try {
+      // Construimos el DTO (estructura estándar del proyecto)
+      const dto = buildDespachoDTO({
+        plate,
+        driverName,
+        fuelLabel: selectedFuel.label,
+        gallons: volume,
+        amount: numericAmount,
+        paymentMethod,
+        subsidio: true,
+        cedulaRuc: driverId,
+        vehicleModel,
+        vehicleColor,
+      });
+
+      await agregarDespacho(dto);
+
+      Alert.alert('Despacho guardado', 'El despacho se registró correctamente.');
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo guardar el despacho. Intenta nuevamente.');
+    }
+  };
+
   return (
     <View style={[styles.screen, { backgroundColor: bg }]}>
-      {/* Header (tu HTML tiene sticky header; aquí lo dejamos fijo arriba) */}
+      {/* Header (en este proyecto, el header del Tab está oculto; usamos uno propio) */}
       <View style={[styles.header, { backgroundColor: surface, borderBottomColor: border }]}>
         <View style={styles.headerLeft}>
           <Pressable
             style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.7 }]}
             onPress={() => {
-              // Aquí puedes abrir un Drawer o menú
-              console.log('Abrir menú');
+              // TODO: aquí podrías abrir un Drawer o un menú
+              Alert.alert('Menú', 'Aquí puedes conectar tu menú lateral.');
             }}
           >
             <MaterialIcons name="menu" size={22} color={colors.text} />
@@ -107,9 +167,7 @@ export default function DespachoScreen() {
           {/* Placa + botón QR */}
           <View style={styles.plateRow}>
             <View style={[styles.inputBox, { borderColor: border }]}>
-              <Text style={[styles.floatingLabel, { color: colors.tint, backgroundColor: surface }]}>
-                Placa
-              </Text>
+              <Text style={[styles.floatingLabel, { color: colors.tint, backgroundColor: surface }]}>Placa</Text>
 
               <View style={styles.inputInnerRow}>
                 <TextInput
@@ -130,14 +188,19 @@ export default function DespachoScreen() {
                 { backgroundColor: isDark ? '#223027' : '#EEF0F2' },
                 pressed && { opacity: 0.7 },
               ]}
-              onPress={() => console.log('Escanear QR')}
+              onPress={() => Alert.alert('QR', 'Aquí puedes conectar tu lector QR.')}
             >
               <MaterialIcons name="qr-code-scanner" size={22} color={colors.text} />
             </Pressable>
           </View>
 
-          {/* Control de Subsidio (en HTML es un gauge semicircular; aquí lo dejamos en barra de progreso) */}
-          <View style={[styles.subsidyCard, { backgroundColor: isDark ? '#1a2a21' : '#F3F5F7', borderColor: border }]}>
+          {/* Control de Subsidio (simplificado a barra de progreso) */}
+          <View
+            style={[
+              styles.subsidyCard,
+              { backgroundColor: isDark ? '#1a2a21' : '#F3F5F7', borderColor: border },
+            ]}
+          >
             <View style={styles.subsidyLeft}>
               <Text style={[styles.subsidyLabel, { color: mutedText }]}>CONTROL DE SUBSIDIO</Text>
 
@@ -228,7 +291,7 @@ export default function DespachoScreen() {
               return (
                 <Pressable
                   key={fuel.key}
-                  onPress={() => setSelectedFuelKey(fuel.key as any)}
+                  onPress={() => setSelectedFuelKey(fuel.key)}
                   style={({ pressed }) => [
                     styles.fuelCard,
                     {
@@ -249,7 +312,7 @@ export default function DespachoScreen() {
                     <MaterialIcons name={fuel.icon} size={20} color={colors.tint} />
                   </View>
 
-                  <Text style={[styles.fuelName, { color: colors.text }]}>{fuel.label}</Text>
+                  <Text style={[styles.fuelName, { color: colors.text }]}>{fuel.uiLabel}</Text>
                   <Text style={[styles.fuelDetail, { color: mutedText }]}>{fuel.detail}</Text>
 
                   <View style={[styles.fuelPrice, { backgroundColor: isDark ? '#101814' : '#F3F5F7' }]}>
@@ -267,7 +330,15 @@ export default function DespachoScreen() {
         <View style={[styles.payCard, { backgroundColor: surface, borderColor: border }]}>
           <Text style={[styles.smallLabel, { color: mutedText }]}>MONTO A PAGAR</Text>
 
-          <View style={[styles.amountBox, { borderColor: isDark ? '#3a4a42' : '#D2D6DB', backgroundColor: isDark ? '#141d18' : '#ffffff' }]}>
+          <View
+            style={[
+              styles.amountBox,
+              {
+                borderColor: isDark ? '#3a4a42' : '#D2D6DB',
+                backgroundColor: isDark ? '#141d18' : '#ffffff',
+              },
+            ]}
+          >
             <View style={{ flex: 1 }}>
               <Text style={[styles.amountCurrencyLabel, { color: mutedText }]}>USD</Text>
 
@@ -333,20 +404,7 @@ export default function DespachoScreen() {
 
         {/* Botón Despachar */}
         <Pressable
-          onPress={() => {
-            // Aquí luego conectas tu lógica real de despacho
-            console.log('Despachar:', {
-              plate,
-              driverName,
-              driverId,
-              vehicleModel,
-              vehicleColor,
-              fuel: selectedFuelKey,
-              amount: numericAmount,
-              volume,
-              paymentMethod,
-            });
-          }}
+          onPress={onSubmitDispatch}
           style={({ pressed }) => [
             styles.dispatchButton,
             { backgroundColor: colors.tint },
@@ -371,95 +429,6 @@ export default function DespachoScreen() {
         <View style={{ height: 24 }} />
       </ScrollView>
     </View>
-  );
-}
-
-/**
- * Campo reutilizable con label flotante + ícono (similar a tu HTML)
- */
-function Field(props: {
-  label: string;
-  icon: React.ComponentProps<typeof MaterialIcons>['name'];
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder: string;
-  surface: string;
-  border: string;
-  textColor: string;
-  placeholderColor: string;
-  keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'phone-pad';
-}) {
-  const {
-    label,
-    icon,
-    value,
-    onChangeText,
-    placeholder,
-    surface,
-    border,
-    textColor,
-    placeholderColor,
-    keyboardType = 'default',
-  } = props;
-
-  return (
-    <View style={[styles.fieldBox, { borderColor: border }]}>
-      <Text style={[styles.floatingLabel, { backgroundColor: surface }]}>{label}</Text>
-
-      <View style={styles.inputInnerRow}>
-        <MaterialIcons name={icon} size={18} color={placeholderColor} />
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={placeholderColor}
-          keyboardType={keyboardType}
-          style={[styles.fieldInput, { color: textColor }]}
-        />
-      </View>
-    </View>
-  );
-}
-
-/**
- * Botón de método de pago (activo/inactivo)
- */
-function PaymentButton(props: {
-  label: string;
-  icon: React.ComponentProps<typeof MaterialIcons>['name'];
-  active: boolean;
-  onPress: () => void;
-  isDark: boolean;
-  colors: typeof Colors.light;
-}) {
-  const { label, icon, active, onPress, isDark, colors } = props;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.paymentButton,
-        active && {
-          backgroundColor: isDark ? '#1c2e24' : '#ffffff',
-        },
-        pressed && { opacity: 0.8 },
-      ]}
-    >
-      <MaterialIcons
-        name={icon}
-        size={18}
-        color={active ? colors.text : isDark ? '#A6B0AA' : '#737A87'}
-      />
-      <Text
-        style={[
-          styles.paymentText,
-          { color: active ? colors.text : isDark ? '#A6B0AA' : '#737A87' },
-          active && { fontWeight: '700' },
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -613,7 +582,12 @@ const styles = StyleSheet.create({
   },
   subsidyValue: { fontSize: 22, fontWeight: '900' },
   subsidyUnit: { fontSize: 12, fontWeight: '700' },
-  subsidyOkRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  subsidyOkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
   subsidyOkText: { fontSize: 10, fontWeight: '900' },
 
   percentText: { fontSize: 16, fontWeight: '900' },
@@ -634,19 +608,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     marginTop: 12,
-  },
-  fieldBox: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  fieldInput: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    paddingVertical: 0,
   },
 
   section: {
@@ -749,19 +710,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 6,
     gap: 6,
-  },
-  paymentButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  paymentText: {
-    fontSize: 12,
-    fontWeight: '700',
   },
 
   dispatchButton: {
