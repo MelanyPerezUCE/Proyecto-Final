@@ -172,12 +172,21 @@ export default function DespachoScreen() {
               <View style={styles.inputInnerRow}>
                 <TextInput
                   value={plate}
-                  onChangeText={setPlate}
+                  editable={false}                 
+                  selectTextOnFocus={false}        
+                  caretHidden                      
                   autoCapitalize="characters"
-                  style={[styles.plateInput, { color: colors.text }]}
+                  style={[
+                    styles.plateInput,
+                    {
+                      color: mutedText,            
+                      opacity: 0.85,
+                    },
+                  ]}
                   placeholder="ABC-1234"
                   placeholderTextColor={mutedText}
                 />
+
                 <MaterialIcons name="directions-car" size={20} color={mutedText} />
               </View>
             </View>
