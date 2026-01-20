@@ -15,11 +15,6 @@ export function ActionButtons({
     const isDisabled = selectedCount === 0;
     return (
     <View style={styles.container}>
-      {/* Contador de seleccionados */}
-      <Text style={styles.selectedText}>
-        Transacciones seleccionadas: {selectedCount}
-      </Text>
-
       {/* Botón Generar Factura */}
       <TouchableOpacity
         style={[styles.primaryButton, isDisabled && styles.buttonDisabled]}
