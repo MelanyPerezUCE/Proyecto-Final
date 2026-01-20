@@ -3,13 +3,14 @@ import {
   ActionButtons,
   CustomerDataForm,
   DateRangeFilter,
+  InvoiceSummary,
   SearchBar,
   TransactionListItem
 } from '@/components/factura';
 import { CustomerIdType, mockTransactions } from '@/constants/mock-data';
 import { useTheme } from '@/context/theme-context';
-import { useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function FacturasScreen() {
   const { isDark } = useTheme();
@@ -26,6 +27,13 @@ export default function FacturasScreen() {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+
+  //calculo automatico de totales basado en las transacciones seleccionadas
+  const subtotal = useMemo(() => {
+    return mockTransactions
+      .filter(t => selectedIds.includes(t.id))
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [selectedIds]);
 
   //Handlers
   const handleFilter = () => {
@@ -50,11 +58,16 @@ export default function FacturasScreen() {
 
   //Handler de acciones
   const handleGenerateInvoice = () => {
+    const iva = subtotal*0.12;
+    const total = subtotal + iva;
     console.log('Generar factura:', {
       transactions: selectedIds,
-      customer: { idType, identification, businessName, email, phone }
+      customer: { idType, identification, businessName, email, phone },
+      subtotal,
+      iva,
+      total
     });
-    alert(`Factura generada para ${selectedIds.length} transacciones.`);
+    alert(`Factura generada para $${total.toFixed(2)} con ${selectedIds.length} transacciones.`);
   }
 
   const handlePrintTicket = () => {
@@ -111,32 +124,41 @@ export default function FacturasScreen() {
           />
         </View>
         {/* Right Panel */}
-        <View style={styles.rightPanel}>
+        <ScrollView 
+          style={styles.rightPanel}
+          contentContainerStyle={styles.rightPanelContent}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.sectionTitle}>Datos del Cliente</Text>
-            
-            {/* Formulario de datos del cliente */}
-            <View style={styles.formContainer}>
-            <CustomerDataForm
-              idType={idType}
-              identification={identification}
-              businessName={businessName}
-              email={email}
-              phone={phone}
-              onIdTypeChange={setIdType}
-              onIdentificationChange={setIdentification}
-              onBusinessNameChange={setBusinessName}
-              onEmailChange={setEmail}
-              onPhoneChange={setPhone}
-            />
-          </View>
+          
+          {/* Formulario */}
+          <CustomerDataForm
+            idType={idType}
+            identification={identification}
+            businessName={businessName}
+            email={email}
+            phone={phone}
+            onIdTypeChange={setIdType}
+            onIdentificationChange={setIdentification}
+            onBusinessNameChange={setBusinessName}
+            onEmailChange={setEmail}
+            onPhoneChange={setPhone}
+          />
 
-          {/* Botones de accion */}
+          {/* Resumen de factura */}
+          <InvoiceSummary
+            selectedCount={selectedIds.length}
+            subtotal={subtotal}
+            iva={0.12}
+          />
+
+          {/* Botones de acción */}
           <ActionButtons
             selectedCount={selectedIds.length}
             onGenerateInvoice={handleGenerateInvoice}
             onPrintTicket={handlePrintTicket}
           />
-        </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -178,6 +200,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
+  },
+  rightPanelContent: {
     padding: 16,
   },
   sectionTitle: {
@@ -185,9 +209,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#11181C',
     marginBottom: 16,
-  },
-  formContainer: {
-    flex: 1,
   },
   listHeader: {
     flexDirection: 'row',
