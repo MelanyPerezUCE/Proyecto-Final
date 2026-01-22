@@ -21,6 +21,7 @@ import {
   calculateVolumeGallons,
   parseCurrencyToNumber,
 } from '@/services/despacho';
+import { router } from 'expo-router';
 
 /**
  * Pantalla: Despacho de Combustible
@@ -114,10 +115,20 @@ export default function DespachoScreen() {
       });
 
       await guardarDespachoTemporal(dto);
-      Alert.alert(
-        'Despacho listo para facturar',
-        'Se guardó temporalmente. Ve a Facturación para emitir la factura.'
-      );
+
+// ✅ Mostramos mensaje y al aceptar, vamos directo a Facturación
+Alert.alert(
+  'Despacho listo para facturar',
+  'Se guardó temporalmente. Presiona "Ir a facturación" para continuar.',
+  [
+    {
+      text: 'Ir a facturación',
+      onPress: () => router.push('/facturas'), // ✅ ruta por el archivo app/(tabs)/facturas.tsx
+    },
+    { text: 'Cancelar', style: 'cancel' },
+  ]
+);
+
 
     } catch (e) {
       Alert.alert('Error', 'No se pudo guardar el despacho. Intenta nuevamente.');
