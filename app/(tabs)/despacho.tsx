@@ -15,7 +15,7 @@ import { PaymentButton } from '@/components/despacho/PaymentButton';
 import { FuelKey, FUELS, PaymentMethod } from '@/constants/despacho';
 import { Colors } from '@/constants/theme';
 import { useTheme } from '@/context/theme-context';
-import { agregarDespacho, escucharPlacaActual } from '@/firebase/database';
+import { escucharPlacaActual, guardarDespachoTemporal } from '@/firebase/database';
 import {
   buildDespachoDTO,
   calculateVolumeGallons,
@@ -113,9 +113,12 @@ export default function DespachoScreen() {
         vehicleColor,
       });
 
-      await agregarDespacho(dto);
+      await guardarDespachoTemporal(dto);
+      Alert.alert(
+        'Despacho listo para facturar',
+        'Se guardó temporalmente. Ve a Facturación para emitir la factura.'
+      );
 
-      Alert.alert('Despacho guardado', 'El despacho se registró correctamente.');
     } catch (e) {
       Alert.alert('Error', 'No se pudo guardar el despacho. Intenta nuevamente.');
     }
@@ -172,14 +175,14 @@ export default function DespachoScreen() {
               <View style={styles.inputInnerRow}>
                 <TextInput
                   value={plate}
-                  editable={false}                 
-                  selectTextOnFocus={false}        
-                  caretHidden                      
+                  editable={false}
+                  selectTextOnFocus={false}
+                  caretHidden
                   autoCapitalize="characters"
                   style={[
                     styles.plateInput,
                     {
-                      color: mutedText,            
+                      color: mutedText,
                       opacity: 0.85,
                     },
                   ]}
