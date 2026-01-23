@@ -45,7 +45,7 @@ export function PlateScannerCard({
     <View
       style={[
         styles.container,
-        { backgroundColor: isDark ? "#2a2a2a" : "#ffff" },
+        { borderWidth: 1,backgroundColor: isDark ? "#141414" : "#ffff", borderColor: isDark ? "#2C2C2C" : "#eee"},
       ]}
     >
       {/* Botón principal grande - Escanear */}

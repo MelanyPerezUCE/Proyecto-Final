@@ -1,8 +1,8 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
+import { Pressable, StyleSheet, Text } from "react-native";
 
-import { Colors } from '@/constants/theme';
+import { Colors } from "@/constants/theme";
 
 /**
  * Botón para seleccionar el método de pago.
@@ -12,7 +12,7 @@ import { Colors } from '@/constants/theme';
  */
 export function PaymentButton(props: {
   label: string;
-  icon: React.ComponentProps<typeof MaterialIcons>['name'];
+  icon: React.ComponentProps<typeof MaterialIcons>["name"];
   active: boolean;
   onPress: () => void;
   isDark: boolean;
@@ -26,7 +26,7 @@ export function PaymentButton(props: {
       style={({ pressed }) => [
         styles.paymentButton,
         active && {
-          backgroundColor: isDark ? '#1c2e24' : '#ffffff',
+          backgroundColor: isDark ? "#2f3444" : "#ffffff",
         },
         pressed && { opacity: 0.8 },
       ]}
@@ -34,14 +34,14 @@ export function PaymentButton(props: {
       <MaterialIcons
         name={icon}
         size={18}
-        color={active ? colors.text : isDark ? '#A6B0AA' : '#737A87'}
+        color={active ? colors.text : isDark ? "#A6B0AA" : "#737A87"}
       />
 
       <Text
         style={[
           styles.paymentText,
-          { color: active ? colors.text : isDark ? '#A6B0AA' : '#737A87' },
-          active && { fontWeight: '700' },
+          { color: active ? colors.text : isDark ? "#A6B0AA" : "#737A87" },
+          active && { fontWeight: "700" },
         ]}
       >
         {label}
@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: 6,
   },
   paymentText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

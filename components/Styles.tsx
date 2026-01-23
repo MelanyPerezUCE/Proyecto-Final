@@ -7,15 +7,15 @@ export const getStyles = (isDark: boolean) =>
       flex: 1,
     },
     h1: {
-      fontSize: 28,
+      fontSize: 25,
       fontWeight: "bold",
       marginBottom: 8,
       color: isDark ? "#fff" : "#000",
       textAlign: "center",
-      marginTop: 35,
+      marginTop: 50,
     },
     h3: {
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: "600",
       marginTop: 24,
       marginBottom: 12,

@@ -139,6 +139,7 @@ export default function TransactionList({ data, onSelect, selectedId }: Props) {
           data={data}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          scrollEnabled={false}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
         />

@@ -1,15 +1,19 @@
-import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as NavThemeProvider,
+} from "@react-navigation/native";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import "react-native-reanimated";
 
-import { ThemeProvider, useTheme } from '@/context/theme-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ThemeProvider, useTheme } from "@/context/theme-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: "(tabs)",
 };
 
 function RootLayoutContent() {
@@ -19,24 +23,31 @@ function RootLayoutContent() {
     <NavThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
       </Stack>
 
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
       <View style={styles.fabContainer} pointerEvents="box-none">
         <TouchableOpacity
           onPress={toggleTheme}
           style={[
             styles.fab,
-            { backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' },
+            {
+              backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "#afb5cab0",
+              marginTop: 27,
+            },
           ]}
           accessibilityLabel="Alternar modo claro u oscuro"
         >
           <MaterialIcons
             name="wb-sunny"
             size={20}
-            color={isDark ? '#fff' : '#000'}
+            color={isDark ? "#fff" : "#000"}
+            style={{ opacity: isDark ? 0.5 : 1 }}
           />
         </TouchableOpacity>
       </View>
@@ -54,7 +65,7 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   fabContainer: {
-    position: 'absolute',
+    position: "absolute",
     right: 16,
     top: 24,
     zIndex: 999,
@@ -62,8 +73,8 @@ const styles = StyleSheet.create({
   fab: {
     minWidth: 44,
     minHeight: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 20,
     elevation: 4,
     paddingHorizontal: 12,

@@ -10,6 +10,7 @@ import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   BackHandler,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -41,10 +42,7 @@ export default function HistorialScreen() {
       const cargarDatos = async () => {
         try {
           const rawData = await escucharDespachos();
-          console.log(
-            "🔥 DATOS CRUDOS DESDE FIREBASE:",
-            JSON.stringify(rawData, null, 2),
-          );
+
           const cleanData: Transaction[] = rawData.map((item: any) => ({
             id: item.id,
             monto: item.Precio
@@ -142,7 +140,7 @@ export default function HistorialScreen() {
   };
 
   return (
-    <View
+    <ScrollView
       style={[
         styles.container,
         { backgroundColor: isDark ? "#000" : "#f5f5f5" },
@@ -156,14 +154,6 @@ export default function HistorialScreen() {
             </Text>
             <Text style={[styles.headerSubtitle, { color: subtitleColor }]}>
               Estación Norte #402
-            </Text>
-          </View>
-          <View style={[styles.statusBadge, { borderColor: badgeBorder }]}>
-            <View
-              style={[styles.statusDot, { backgroundColor: badgeBorder }]}
-            />
-            <Text style={[styles.statusText, { color: badgeText }]}>
-              En Línea
             </Text>
           </View>
         </View>
@@ -236,7 +226,7 @@ export default function HistorialScreen() {
           </View>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -261,7 +251,7 @@ const parseDateString = (dateStr: string): Date | null => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 50 },
+  container: { flex: 1, paddingLeft: 20, paddingRight: 20, paddingTop: 50 },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -298,7 +288,6 @@ const getColorByFuel = (fuel: string = "") => {
   const f = fuel.toLowerCase();
   if (f.includes("extra") || f.includes("magna")) return "#00C853";
   if (f.includes("super") || f.includes("premium")) return "#EF4444";
-  if (f.includes("diesel")) return "#000000";
+  if (f.includes("diesel")) return "#E5AF08";
   return "#666";
 };
-

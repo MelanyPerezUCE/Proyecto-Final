@@ -1,6 +1,6 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps } from "react";
 
-import type { MaterialIcons } from '@expo/vector-icons';
+import type { MaterialIcons } from "@expo/vector-icons";
 
 /**
  * Tipos base usados en la pantalla de despacho.
@@ -9,9 +9,9 @@ import type { MaterialIcons } from '@expo/vector-icons';
  * La lógica de cálculos va en /services.
  */
 
-export type FuelKey = 'premium' | 'extra' | 'diesel';
+export type FuelKey = "premium" | "extra" | "diesel";
 
-export type PaymentMethod = 'efectivo' | 'tarjeta' | 'rfid';
+export type PaymentMethod = "efectivo" | "tarjeta" | "rfid";
 
 export type FuelOption = {
   /** Llave interna para la app */
@@ -25,7 +25,9 @@ export type FuelOption = {
   /** Precio por galón (USD) */
   pricePerGal: number;
   /** Ícono (MaterialIcons) */
-  icon: ComponentProps<typeof MaterialIcons>['name'];
+  icon: ComponentProps<typeof MaterialIcons>["name"];
+  /** Color hexadecimal (sin #) */
+  color?: string;
 };
 
 /**
@@ -35,27 +37,30 @@ export type FuelOption = {
  */
 export const FUELS: FuelOption[] = [
   {
-    key: 'premium',
-    label: 'Premium',
-    uiLabel: 'Súper',
-    detail: '92 Oct',
+    key: "premium",
+    label: "Premium",
+    uiLabel: "Súper",
+    detail: "92 Oct",
     pricePerGal: 4.15,
-    icon: 'local-gas-station',
+    icon: "local-gas-station",
+    color: "#ff4d4d",
   },
   {
-    key: 'extra',
-    label: 'Extra',
-    uiLabel: 'Extra',
-    detail: '85 Oct',
+    key: "extra",
+    label: "Extra",
+    uiLabel: "Extra",
+    detail: "85 Oct",
     pricePerGal: 2.4,
-    icon: 'local-gas-station',
+    icon: "local-gas-station",
+    color: "#11D452",
   },
   {
-    key: 'diesel',
-    label: 'Diesel',
-    uiLabel: 'Diésel',
-    detail: 'Premium',
+    key: "diesel",
+    label: "Diesel",
+    uiLabel: "Diésel",
+    detail: "Premium",
     pricePerGal: 1.75,
-    icon: 'local-gas-station',
+    icon: "local-gas-station",
+    color: "#E5AF08",
   },
 ];

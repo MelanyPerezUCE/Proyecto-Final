@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/theme-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Transaction } from "./TransactionList";
 
 interface Props {
@@ -27,14 +27,23 @@ export default function TransactionDetail({ transaction }: Props) {
   const infoText = isDark ? "#90CAF9" : "#1565C0";
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: bgMain }]}
-      showsVerticalScrollIndicator={false}
+    <View
+      style={[
+        styles.container,
+        {
+          padding: 20,
+          marginBottom: 80,
+          borderWidth: 1,
+          backgroundColor: isDark ? "#141414" : "#ffff",
+          borderColor: isDark ? "#2C2C2C" : "#eee",
+          borderRadius: 20,
+        },
+      ]}
     >
       {/* 1. ENCABEZADO CON TÍTULO Y BADGE */}
       <View style={styles.headerRow}>
         <Text style={[styles.headerTitle, { color: textPrimary }]}>
-          Detalle de Transacción
+          Detalle de{"\n"}Transacción
         </Text>
         <View style={[styles.statusBadge, { backgroundColor: badgeBg }]}>
           <Text
@@ -143,7 +152,7 @@ export default function TransactionDetail({ transaction }: Props) {
           al módulo de facturación.
         </Text>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -236,6 +245,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
+    marginBottom: 50,
   },
   infoFooterText: { flex: 1, fontSize: 12, lineHeight: 18 },
 });
