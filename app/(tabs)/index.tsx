@@ -274,3 +274,4 @@ const loadingStyles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+
