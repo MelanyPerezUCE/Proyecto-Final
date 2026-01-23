@@ -9,7 +9,8 @@ import {
 } from '@/components/factura';
 import { CustomerIdType, mockTransactions } from '@/constants/mock-data';
 import { useTheme } from '@/context/theme-context';
-import { useMemo, useState } from 'react';
+import { escucharDespachos } from '@/firebase';
+import { useEffect, useMemo, useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function FacturasScreen() {
@@ -27,6 +28,12 @@ export default function FacturasScreen() {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+
+  useEffect(() => {
+    escucharDespachos().then(data => {
+      console.log('Datos de Firebase:', data);
+    })
+  })
 
   //calculo automatico de totales basado en las transacciones seleccionadas
   const subtotal = useMemo(() => {
