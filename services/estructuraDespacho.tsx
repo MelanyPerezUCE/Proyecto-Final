@@ -10,8 +10,8 @@ export interface DespachoDTO {
   Tipo_Pago: string;
   Subsidio: boolean;
   Cedula_Ruc: string;
-
   /** Datos adicionales del vehículo (opcionales) */
   Modelo_Vehiculo?: string;
   Color_Vehiculo?: string;
 }
+
