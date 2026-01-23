@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { Transaction } from '@/constants/mock-data';
+import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TransactionListItemProps {
   transaction: Transaction;
@@ -64,9 +64,6 @@ export function TransactionListItem({ transaction, isSelected, onToggleSelect }:
       <View style={styles.statusContainer}>
         <Text style={[styles.status, { color: statusColor }]}>{transaction.status}</Text>
       </View>
-
-      {/* Flecha */}
-      <MaterialIcons name="chevron-right" size={24} color="#687076" />
     </TouchableOpacity>
   );
 }

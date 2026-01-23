@@ -1,5 +1,5 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface DateRangeFilterProps {
   startDate: string;
@@ -16,6 +16,27 @@ export function DateRangeFilter({
   onEndDateChange,
   onFilter,
 }: DateRangeFilterProps) {
+
+  const formatDateInput = (text: string): string => {
+    const numbers = text.replace(/\D/g, '');
+
+    if (numbers.length <= 2) {
+      return numbers;
+    } else if (numbers.length <= 4) {
+      return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+    } else {
+      return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+    }
+  };
+
+  //handlers con formato automatico
+  const handleStartDateChange = (text: string) => {
+    onStartDateChange(formatDateInput(text));
+  };
+
+  const handleEndDateChange = (text: string) => {
+    onEndDateChange(formatDateInput(text));
+  }
   return (
     <View style={styles.container}>
       {/* Fecha Inicio */}
@@ -25,11 +46,15 @@ export function DateRangeFilter({
           <TextInput
             style={styles.input}
             value={startDate}
-            onChangeText={onStartDateChange}
+            onChangeText={handleStartDateChange}
             placeholder="dd/mm/yyyy"
             placeholderTextColor="#687076"
+            keyboardType="numeric"
+            maxLength={10}
           />
-          <MaterialIcons name="calendar-today" size={18} color="#687076" />
+          <View style={styles.iconContainer}>
+            <MaterialIcons name="calendar-today" size={18} color="#687076" />
+          </View>
         </View>
       </View>
 
@@ -40,11 +65,15 @@ export function DateRangeFilter({
           <TextInput
             style={styles.input}
             value={endDate}
-            onChangeText={onEndDateChange}
+            onChangeText={handleEndDateChange}
             placeholder="Hoy"
             placeholderTextColor="#687076"
+            keyboardType="numeric"
+            maxLength={10}
           />
-          <MaterialIcons name="calendar-today" size={18} color="#687076" />
+          <View style={styles.iconContainer}>
+            <MaterialIcons name="calendar-today" size={18} color="#687076" />
+          </View>
         </View>
       </View>
 
@@ -81,11 +110,6 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: '#FFFFFF',
   },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: '#11181C',
-  },
   filterButton: {
     backgroundColor: '#1F2937',
     borderRadius: 8,
@@ -98,5 +122,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    color: '#11181C',
+    minWidth: 0,
+  },
+  iconContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
   },
 });

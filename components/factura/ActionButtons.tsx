@@ -10,7 +10,7 @@ interface ActionButtonsProps {
 export function ActionButtons({
     selectedCount,
     onGenerateInvoice,
-    onPrintTicket,
+    onPrintTicket, //Eliminar funcion imprimir ticket
 }: ActionButtonsProps) {
     const isDisabled = selectedCount === 0;
     return (
@@ -27,7 +27,7 @@ export function ActionButtons({
       </TouchableOpacity>
 
       {/* Botón Imprimir Ticket */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[styles.secondaryButton, isDisabled && styles.secondaryButtonDisabled]}
         onPress={onPrintTicket}
         disabled={isDisabled}
@@ -37,7 +37,7 @@ export function ActionButtons({
         <Text style={[styles.secondaryButtonText, isDisabled && styles.secondaryButtonTextDisabled]}>
           Imprimir Ticket
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

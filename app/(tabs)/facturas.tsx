@@ -75,6 +75,14 @@ export default function FacturasScreen() {
     alert(`Imprimiendo ticker de ${selectedIds.length} transacciones.`);
   }
 
+  const handleIdTypeChange = (type: CustomerIdType) => {
+    setIdType(type);
+    setIdentification('');
+    setBusinessName('');
+    setEmail('');
+    setPhone('');
+  };
+
   const isAllSelected = selectedIds.length === mockTransactions.length && mockTransactions.length > 0;
 
   return (
@@ -138,7 +146,7 @@ export default function FacturasScreen() {
             businessName={businessName}
             email={email}
             phone={phone}
-            onIdTypeChange={setIdType}
+            onIdTypeChange={handleIdTypeChange}
             onIdentificationChange={setIdentification}
             onBusinessNameChange={setBusinessName}
             onEmailChange={setEmail}
@@ -156,7 +164,7 @@ export default function FacturasScreen() {
           <ActionButtons
             selectedCount={selectedIds.length}
             onGenerateInvoice={handleGenerateInvoice}
-            onPrintTicket={handlePrintTicket}
+            onPrintTicket={handlePrintTicket} //Elimiar funcion imprimir ticket
           />
         </ScrollView>
       </View>
