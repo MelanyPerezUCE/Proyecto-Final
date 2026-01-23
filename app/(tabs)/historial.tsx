@@ -27,8 +27,7 @@ export default function HistorialScreen() {
   const [displayedTransactions, setDisplayedTransactions] = useState<
     Transaction[]
   >([]);
-  const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
   const titleColor = isDark ? "#fff" : "#111";
   const subtitleColor = "#009688";
@@ -68,7 +67,9 @@ export default function HistorialScreen() {
             setDisplayedTransactions(sortedData);
 
             if (isLargeScreen && sortedData.length > 0) {
-              setSelectedTransaction((current) => current || sortedData[0]);
+              setSelectedTransaction(
+                (current: any) => current || sortedData[0],
+              );
             }
           }
         } catch (error) {
