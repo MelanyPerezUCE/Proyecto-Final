@@ -300,3 +300,4 @@ const getColorByFuel = (fuel: string = "") => {
   if (f.includes("diesel")) return "#000000";
   return "#666";
 };
+
