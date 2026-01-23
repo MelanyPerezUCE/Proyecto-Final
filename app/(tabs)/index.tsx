@@ -57,7 +57,7 @@ export default function HomeScreen() {
       cargarDespachos();
 
       return () => {};
-    }, [])
+    }, []),
   );
 
   const openCameraHandler = async () => {
@@ -83,7 +83,7 @@ export default function HomeScreen() {
       const optimized = await ImageManipulator.manipulateAsync(
         photo.uri,
         [{ resize: { width: 800 } }],
-        { base64: true, compress: 0.75 }
+        { base64: true, compress: 0.75 },
       );
 
       const base64 = optimized.base64;
@@ -101,7 +101,7 @@ export default function HomeScreen() {
             if (description === "No legible") {
               Alert.alert(
                 "Placa no legible",
-                "No se pudo leer la placa del vehículo. Intenta nuevamente."
+                "No se pudo leer la placa del vehículo. Intenta nuevamente.",
               );
               return;
             }
@@ -127,6 +127,9 @@ export default function HomeScreen() {
   const closeCamera = () => {
     setOpenCamera(false);
   };
+
+  // Definimos colores de texto según el tema
+  const textColor = isDark ? "#fff" : "#000";
 
   return (
     <View style={{ backgroundColor: isDark ? '#000' : '#F4F5F6', flex: 1 }}>
@@ -215,7 +218,7 @@ export default function HomeScreen() {
             if (plate.length < 7) {
               Alert.alert(
                 "Placa inválida",
-                "La placa ingresada es demasiado corta. Verifícala e intenta nuevamente."
+                "La placa ingresada es demasiado corta. Verifícala e intenta nuevamente.",
               );
               return;
             }
@@ -242,8 +245,8 @@ export default function HomeScreen() {
               item.Tipo_Combustible === "Premium"
                 ? "#ff4d4d"
                 : item.Tipo_Combustible === "Extra"
-                ? "#11D452"
-                : "#E5AF08"
+                  ? "#11D452"
+                  : "#E5AF08"
             }
           />
         ))}

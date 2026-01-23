@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 
-const API_KEY =
-  "xai-eayvzNL9xIJaNaZIe8ZgORwdMEiJgUyo8BviPp0vIc7IVFdA2gWcFvGvRMVBpmWlMjp2lzwQ4MHfKk6B";
+const API_KEY = "xd";
 
 if (!API_KEY) {
   throw new Error("Falta la variable EXPO_PUBLIC_GROK_API_KEY");
