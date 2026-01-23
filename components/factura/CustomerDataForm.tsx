@@ -23,14 +23,13 @@ const CONSUMIDOR_FINAL = {
   businessName: 'Consumidor Final',
 };
 
-// Configuración de longitud máxima por tipo de identificación
-const ID_MAX_LENGTH: Record<CustomerIdType, number> = {
+const max_lenght: Record<CustomerIdType, number> = {
   'RUC': 13,
   'Cedula': 10,
   'C. Final': 13,
 };
 
-const PHONE_MAX_LENGTH = 10;
+const phone_lenght = 10;
 
 export function CustomerDataForm({
     idType,
@@ -82,7 +81,7 @@ export function CustomerDataForm({
             placeholderTextColor="#9BA1A6"
             keyboardType="numeric"
             editable={!isConsumidorFinal}
-            maxLength={ID_MAX_LENGTH[idType]}
+            maxLength={max_lenght[idType]}
           />
         </View>
       </View>
@@ -136,7 +135,7 @@ export function CustomerDataForm({
             placeholder="0999999999"
             placeholderTextColor="#9BA1A6"
             keyboardType="phone-pad"
-            maxLength={PHONE_MAX_LENGTH}
+            maxLength={phone_lenght}
           />
         </View>
       </View>
