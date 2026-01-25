@@ -43,63 +43,46 @@ export default function TransactionDetail({ transaction }: Props) {
       {/* 1. ENCABEZADO CON TÍTULO Y BADGE */}
       <View style={styles.headerRow}>
         <Text style={[styles.headerTitle, { color: textPrimary }]}>
-          Detalle de Transacción
+          Detalle de Notificación
         </Text>
       </View>
 
-      {/* 2. TARJETA PRINCIPAL (MONTO) */}
-      <View
-        style={[
-          styles.mainCard,
-          { backgroundColor: bgCard, borderColor: borderColor },
-        ]}
-      >
-        <Text style={{ color: textSecondary, fontSize: 12, marginBottom: 5 }}>
-          Monto Total
-        </Text>
-        <Text style={[styles.amountText, { color: textPrimary }]}>
-          {transaction.monto}
-        </Text>
-        <Text style={{ color: textSecondary, fontSize: 12, marginTop: 5 }}>
-          Ticket {transaction.ticket} • {transaction.fecha}, {transaction.hora}
+      {/* 5. FOOTER INFO AZUL */}
+      <View style={[styles.infoFooter, { backgroundColor: infoBg }]}>
+        <MaterialIcons
+          name="info-outline"
+          size={22}
+          color={infoText}
+          style={{ marginRight: 10 }}
+        />
+        <Text
+          style={[
+            styles.infoFooterText,
+            { color: infoText, fontWeight: "bold" },
+          ]}
+        >
+          {transaction.message}
         </Text>
       </View>
 
       {/* 3. GRILLA DE INFORMACIÓN */}
       <Text style={[styles.sectionLabel, { color: textSecondary }]}>
-        INFORMACIÓN DE CARGA
+        INFORME DE ALTERACIÓN DEL TANQUE
       </Text>
 
       <View style={styles.gridContainer}>
         {/* Fila 1 */}
         <View style={styles.row}>
           <InfoBox
-            label="Nombre"
+            label="Propietario"
             value={transaction.propietario}
             isDark={isDark}
             width="48%"
             boldValue
           />
           <InfoBox
-            label="Cédula / Ruc"
-            value={transaction.cedula}
-            isDark={isDark}
-            width="48%"
-            boldValue
-          />
-        </View>
-        {/* Fila 1 */}
-        <View style={styles.row}>
-          <InfoBox
-            label="Combustible"
-            value={transaction.combustible}
-            isDark={isDark}
-            width="48%"
-            boldValue
-          />
-          <InfoBox
             label="Placa"
-            value={transaction.bomba}
+            value={transaction.plate}
             isDark={isDark}
             width="48%"
             boldValue
@@ -108,66 +91,40 @@ export default function TransactionDetail({ transaction }: Props) {
         {/* Fila 2 */}
         <View style={styles.row}>
           <InfoBox
-            label="Litros"
-            value={transaction.litros.replace("Gal", "Galones")}
+            label="Capacidad del Tanque en Galones"
+            value={transaction.galones_maximos}
             isDark={isDark}
             width="48%"
             boldValue
           />
           {/* Dato simulado de precio unitario visualmente */}
           <InfoBox
-            label="Precio/Galón"
-            value="$4.00"
+            label="Galones Pedidos"
+            value={transaction.galones_pedidos}
             isDark={isDark}
             width="48%"
             boldValue
           />
         </View>
-      </View>
 
-      {/* 4. SECCIÓN PAGO */}
-      <Text style={[styles.sectionLabel, { color: textSecondary }]}>PAGO</Text>
-      <View
-        style={[
-          styles.paymentCard,
-          { backgroundColor: bgCard, borderColor: borderColor },
-        ]}
-      >
-        <View style={styles.iconCircle}>
-          <MaterialIcons
-            name={
-              transaction.metodo.toLowerCase().includes("tarjeta")
-                ? "credit-card"
-                : transaction.metodo.toLowerCase().includes("deuna")
-                  ? "nfc"
-                  : "payments"
-            }
-            size={24}
-            color="#00C853"
+        {/* Fila 3 */}
+        <View style={styles.row}>
+          <InfoBox
+            label="Fecha"
+            value={transaction.fecha}
+            isDark={isDark}
+            width="48%"
+            boldValue
+          />
+          {/* Dato simulado de precio unitario visualmente */}
+          <InfoBox
+            label="Hora"
+            value={transaction.hora}
+            isDark={isDark}
+            width="48%"
+            boldValue
           />
         </View>
-        <View>
-          <Text style={[styles.paymentTitle, { color: textPrimary }]}>
-            {transaction.metodo}
-          </Text>
-          <Text style={{ color: textSecondary, fontSize: 12 }}>
-            Pago directo en caja
-          </Text>
-        </View>
-      </View>
-
-      {/* 5. FOOTER INFO AZUL */}
-      <View style={[styles.infoFooter, { backgroundColor: infoBg }]}>
-        <MaterialIcons
-          name="info-outline"
-          size={20}
-          color={infoText}
-          style={{ marginRight: 10 }}
-        />
-        <Text style={[styles.infoFooterText, { color: infoText }]}>
-          Esta transacción ya ha sido facturada. Para ver la factura, diríjase
-          al módulo de facturación.
-        </Text>
       </View>
     </View>
   );
@@ -262,7 +219,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
-    marginBottom: 50,
+    marginBottom: 25,
   },
   infoFooterText: { flex: 1, fontSize: 12, lineHeight: 18 },
 });

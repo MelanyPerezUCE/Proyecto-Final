@@ -1,7 +1,7 @@
 import { useTheme } from "@/context/theme-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { Platform, StyleSheet, TextInput, View } from "react-native";
 
 interface Props {
   onFilter: (text: string, startDate?: Date, endDate?: Date) => void;
@@ -22,11 +22,42 @@ export default function TransactionFilters({ onFilter }: Props) {
   const labelColor = isDark ? "#aaa" : "#666";
   const inputBg = isDark ? "#141414" : "#fff";
   const borderColor = isDark ? "#2C2C2C" : "#eee";
-  const buttonBg = isDark ? "#00C853" : "#00C853";
+  const buttonBg = isDark ? "#00C853" : "#1A2E35";
 
   const handleTextChange = (newText: string) => {
     setText(newText);
     onFilter(newText, startDate, endDate);
+  };
+
+  const handleFilterPress = () => {
+    onFilter(text, startDate, endDate);
+  };
+
+  const openDatePicker = (mode: "start" | "end") => {
+    setPickerMode(mode);
+    setShowPicker(true);
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") setShowPicker(false);
+
+    if (selectedDate) {
+      if (pickerMode === "start") {
+        setStartDate(selectedDate);
+        if (!endDate) setEndDate(selectedDate);
+      } else {
+        setEndDate(selectedDate);
+      }
+    }
+  };
+
+  const formatDate = (date?: Date) => {
+    if (!date) return "Seleccionar fecha";
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   return (
@@ -36,8 +67,9 @@ export default function TransactionFilters({ onFilter }: Props) {
         style={[
           styles.searchContainer,
           {
+            borderWidth: 1,
             backgroundColor: isDark ? "#141414" : "#ffff",
-            borderColor: isDark ? "#2C2C2C" : "#eee",
+            borderColor: isDark ? "#999" : "#9CA3AF",
           },
         ]}
       >
@@ -47,7 +79,7 @@ export default function TransactionFilters({ onFilter }: Props) {
           color={isDark ? "#9CA3AF" : "#999"}
         />
         <TextInput
-          placeholder="Buscar por placa, propietario"
+          placeholder="Buscar por placa o propietario"
           placeholderTextColor="#9CA3AF"
           style={[styles.searchInput, { color: textColor }]}
           value={text}

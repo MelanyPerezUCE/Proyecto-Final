@@ -2,7 +2,14 @@ import { PlateScannerCard } from "@/components/index/card_foto";
 import { CardHome } from "@/components/index/cards_home";
 import { getStyles } from "@/components/Styles";
 import { useTheme } from "@/context/theme-context";
-import { obtenerUltimosDespachos } from "@/firebase/database";
+import {
+  agregarPlaca,
+  agregarVehiculo,
+  buscarPlaca,
+  buscarVehiculoPorNombre,
+  obtenerUltimosDespachos,
+} from "@/firebase/database";
+import { api_consultarPlaca } from "@/services/api_placa";
 import { DespachoDTO } from "@/services/estructuraDespacho";
 import { GROKService } from "@/services/GROKService";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -11,7 +18,6 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 import { router, useFocusEffect } from "expo-router";
 import React, { useRef, useState } from "react";
-
 import {
   ActivityIndicator,
   Alert,
@@ -63,6 +69,103 @@ export default function HomeScreen() {
       }
     }
     setOpenCamera(true);
+  };
+
+  const consultaPlaca = async (plate: string) => {
+    let placaExistente = await buscarPlaca(plate);
+
+    const fecha = new Date();
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+
+    const mesAnio = `${mes}/${anio}`;
+
+    if (!placaExistente) {
+      const datosPlaca = await api_consultarPlaca(plate);
+
+      if (!datosPlaca) {
+        Alert.alert(
+          "Placa no encontrada",
+          "No se encontraron datos para la placa ingresada. Verifícala e intenta nuevamente.",
+        );
+        setIsAnalyzing(false);
+        return;
+      }
+
+      const guardar_placa = await agregarPlaca(plate, {
+        marca: datosPlaca.data.Marca,
+        modelo: datosPlaca.data.Modelo,
+        color: datosPlaca.data.Color,
+        propietario: "Desconocido",
+        cedula: "0000000000",
+        subsidio: 20,
+        cedula_ruc: "CEDULA",
+        recarga: mesAnio,
+      });
+
+      placaExistente = {
+        marca: datosPlaca.data.Marca,
+        modelo: datosPlaca.data.Modelo,
+        color: datosPlaca.data.Color,
+        propietario: "Desconocido",
+        cedula: "0000000000",
+        subsidio: 20,
+        cedula_ruc: "CEDULA",
+      };
+    } else {
+      if (placaExistente.recarga !== mesAnio) {
+        const guardar_placa = await agregarPlaca(plate, {
+          subsidio: 20,
+          recarga: mesAnio,
+        });
+
+        placaExistente.subsidio = 20;
+      }
+    }
+
+    let galones = await buscarVehiculoPorNombre(
+      normalizarParaFirebase(placaExistente.marca) +
+        "_" +
+        normalizarParaFirebase(placaExistente.modelo),
+    );
+
+    if (!galones) {
+      galones = await GROKService.getFuelCapacity(
+        placaExistente.modelo,
+        placaExistente.marca,
+      );
+
+      if (galones != "No disponible") {
+        const guardar_galones = await agregarVehiculo(
+          normalizarParaFirebase(placaExistente.marca) +
+            "_" +
+            normalizarParaFirebase(placaExistente.modelo),
+          galones,
+        );
+      } else {
+        galones = "12.5";
+      }
+    }
+
+    await AsyncStorage.removeItem("data");
+    await AsyncStorage.setItem(
+      "data",
+      JSON.stringify({
+        plate: plate,
+        galones: parseFloat(galones),
+        marca: placaExistente.marca,
+        modelo: placaExistente.modelo,
+        color: placaExistente.color,
+        propietario: placaExistente.propietario,
+        cedula: placaExistente.cedula,
+        subsidio: placaExistente.subsidio,
+        cedula_ruc: placaExistente.cedula_ruc,
+      }),
+    );
+
+    setManualPlate("");
+    router.push("/(tabs)/despacho");
+    setIsAnalyzing(false);
   };
 
   const takePhoto = async () => {
@@ -120,16 +223,13 @@ export default function HomeScreen() {
             );
             return;
           }
-          await AsyncStorage.removeItem("plate");
 
-          await AsyncStorage.setItem("plate", description);
+          consultaPlaca(description);
         } catch (error) {
           Alert.alert("Error al describir la imagen");
         }
       } catch (error: any) {
         Alert.alert("Error al analizar con Grok");
-      } finally {
-        setIsAnalyzing(false);
       }
     } catch (error) {
       Alert.alert("Error al capturar foto");
@@ -142,39 +242,16 @@ export default function HomeScreen() {
     setOpenCamera(false);
   };
 
+  const normalizarParaFirebase = (texto: string) =>
+    texto
+      .toLowerCase()
+      .normalize("NFD") // separa acentos
+      .replace(/[\u0300-\u036f]/g, "") // elimina tildes
+      .replace(/[^a-z0-9]/g, "_") // reemplaza todo lo raro por _
+      .replace(/_+/g, "_") // evita ____
+      .replace(/^_|_$/g, ""); // quita _ al inicio/fin
+
   return (
-    <View style={{ backgroundColor: isDark ? '#000' : '#F4F5F6', flex: 1 }}>
-      <Text style={{ color: isDark ? '#fff' : '#000' }}>
-        {isDark ? 'Modo oscuro' : 'Modo claro'}
-      </Text>
-      <Text style={{ fontSize: 32, fontWeight: 'bold', color: isDark ? '#fff' : '#000' }}>Nuevo Despacho</Text>
-      <Text style={{ fontSize: 16, color: '#737A87' }}>Identifique el vehiculo para comenzar</Text>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: isDark ? '#fff' : '#000' }}>Ultimo Despacho</Text>
-      <CardHome
-        title="MBT-882"
-        subtitle="Premium • 12.5 Gin"
-        price="$45.00"
-        time="10:42 AM"
-        icon="local-gas-station"
-        iconColor="#ff6b6b" 
-      />
-      <CardHome
-        title="MBT-882"
-        subtitle="Premium • 12.5 Gin"
-        price="$45.00"
-        time="10:42 AM"
-        icon="local-gas-station"
-        iconColor="#11D452" 
-      />
-      <CardHome
-        title="MBT-882"
-        subtitle="Premium • 12.5 Gin"
-        price="$45.00"
-        time="10:42 AM"
-        icon="directions-car"
-        iconColor="#E5AF08" 
-      />
-    </View>
     <>
       <ScrollView
         style={styles.container}
@@ -194,12 +271,9 @@ export default function HomeScreen() {
               );
               return;
             }
-            // agregarPlacaActual(plate);
 
-            await AsyncStorage.removeItem("plate");
-            await AsyncStorage.setItem("plate", plate);
-            setManualPlate("");
-            router.push("/(tabs)/despacho");
+            setIsAnalyzing(true);
+            consultaPlaca(plate);
           }}
           manualPlate={manualPlate}
           setManualPlate={setManualPlate}

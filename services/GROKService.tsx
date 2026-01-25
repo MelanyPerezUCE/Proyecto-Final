@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-const API_KEY = "xd";
+const API_KEY = "aqui";
 
 if (!API_KEY) {
   throw new Error("Falta la variable EXPO_PUBLIC_GROK_API_KEY");
@@ -73,6 +73,56 @@ Respuesta máxima 10 caracteres.`,
           : "Error desconocido al analizar la imagen";
 
       throw new Error(errorMessage);
+    }
+  }
+
+  static async getFuelCapacity(
+    tipoAuto: string,
+    marca: string,
+  ): Promise<string> {
+    try {
+      const completion = await client.chat.completions.create({
+        model: "grok-4-1-fast-reasoning",
+        messages: [
+          {
+            role: "user",
+            content: `
+Indica SOLO la capacidad del tanque de combustible en GALONES del siguiente vehículo.
+
+Vehículo:
+Modelo: ${marca} ${tipoAuto}
+
+REGLAS OBLIGATORIAS (NO LAS ROMPAS):
+- Responde ÚNICAMENTE con un número.
+- Puede incluir decimales si aplica.
+- NO agregues texto, letras, símbolos ni unidades.
+- NO respondas "no disponible", "desconocido" ni similares.
+- Si no estás seguro del valor exacto, responde con el valor MÁS COMÚN para ese modelo.
+
+Ejemplos de respuesta válida:
+12
+14.5
+16
+          `,
+          },
+        ],
+        temperature: 0.05,
+        max_tokens: 10,
+      });
+
+      let result = completion.choices?.[0]?.message?.content?.trim();
+
+      // 🔒 Protección total contra respuestas inválidas
+      if (!result || isNaN(Number(result))) {
+        // Fallback seguro (Toyota Urban Cruiser / 1NR)
+        return "12";
+      }
+
+      return result;
+    } catch (error: unknown) {
+      console.error("Error al obtener capacidad del tanque:", error);
+      // Fallback final para que nunca reviente la app
+      return "12";
     }
   }
 }

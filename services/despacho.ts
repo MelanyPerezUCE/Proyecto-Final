@@ -1,17 +1,10 @@
-import type { DespachoDTO } from './estructuraDespacho';
-
-import type { PaymentMethod } from '@/constants/despacho';
-
 /**
  * Convierte un string de moneda a número.
  * - Acepta comas o puntos como separador decimal.
  * - Limpia símbolos y espacios.
  */
 export function parseCurrencyToNumber(value: string): number {
-  const clean = value
-    .replace(/\s+/g, '')
-    .replace(/\$/g, '')
-    .replace(',', '.');
+  const clean = value.replace(/\s+/g, "").replace(/\$/g, "").replace(",", ".");
 
   const parsed = Number(clean);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -20,67 +13,92 @@ export function parseCurrencyToNumber(value: string): number {
 /**
  * Calcula galones en base al monto y el precio por galón.
  */
-export function calculateVolumeGallons(amountUsd: number, pricePerGal: number): number {
-  if (pricePerGal <= 0) return 0;
-  return amountUsd / pricePerGal;
-}
 
-/**
- * Formatea la fecha como dd/mm/yyyy.
- *
- * Nota: lo hacemos manual para evitar variaciones de locale.
- */
-function formatDateDDMMYYYY(date: Date): string {
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const yyyy = String(date.getFullYear());
-  return `${dd}/${mm}/${yyyy}`;
-}
+export function calculateVolumeGallons(
+  amountUsd: number,
+  pricePerGal: number,
+  availableSubsidyUsd: number,
+  fuelLabel: string,
+) {
+  if (pricePerGal <= 0 || amountUsd <= 0) {
+    return {
+      totalGallons: 0,
+      subsidizedGallons: 0,
+      normalGallons: 0,
+      subsidyUsedUsd: 0,
+      subsidyRemainingUsd: availableSubsidyUsd,
+    };
+  }
 
-/**
- * Formatea la hora como HH:MM (24h).
- */
-function formatTimeHHMM(date: Date): string {
-  const hh = String(date.getHours()).padStart(2, '0');
-  const min = String(date.getMinutes()).padStart(2, '0');
-  return `${hh}:${min}`;
-}
+  let monto_iva = amountUsd;
+  amountUsd = amountUsd / 1.15;
+  monto_iva = monto_iva - amountUsd;
 
-type BuildDespachoParams = {
-  plate: string;
-  /** Nombre del conductor (opcional pero recomendado) */
-  driverName?: string;
-  fuelLabel: string;
-  gallons: number;
-  amount: number;
-  paymentMethod: PaymentMethod;
-  subsidio: boolean;
-  /** Cédula / RUC (opcional) */
-  cedulaRuc?: string;
+  // Subsidio por galón según combustible
+  let subsidyPerGal = 0;
 
-  /** Datos del vehículo (opcionales) */
-  vehicleModel?: string;
-  vehicleColor?: string;
-};
+  switch (fuelLabel.toLowerCase()) {
+    case "extra":
+      subsidyPerGal = 0.88;
+      break;
+    case "súper":
+    case "super":
+      subsidyPerGal = 0.72;
+      break;
+    case "diésel":
+    case "diesel":
+      subsidyPerGal = 1.78;
+      break;
+    default:
+      subsidyPerGal = 0;
+  }
 
-/**
- * Construye el objeto con la estructura esperada por Firebase (DespachoDTO).
- */
-export function buildDespachoDTO(params: BuildDespachoParams): DespachoDTO {
-  const now = new Date();
+  // Si no aplica subsidio
+  if (subsidyPerGal <= 0 || availableSubsidyUsd <= 0) {
+    const gallons = amountUsd / pricePerGal;
+    return {
+      totalGallons: Number(gallons.toFixed(2)),
+      subsidizedGallons: 0,
+      normalGallons: Number(gallons.toFixed(2)),
+      subsidyUsedUsd: 0,
+      subsidyRemainingUsd: availableSubsidyUsd,
+      monto_iva: Number(monto_iva.toFixed(2)),
+      amountUsd: Number(amountUsd.toFixed(2)),
+    };
+  }
+
+  const subsidizedPricePerGal = pricePerGal - subsidyPerGal;
+
+  // Máximo de galones que se pueden subsidiar
+  const maxSubsidizedGallons = availableSubsidyUsd / subsidyPerGal;
+
+  // Galones que el usuario puede comprar al precio subsidiado
+  const gallonsWithSubsidy = Math.min(
+    maxSubsidizedGallons,
+    amountUsd / subsidizedPricePerGal,
+  );
+
+  // Subsidio usado en USD
+  const subsidyUsedUsd = gallonsWithSubsidy * subsidyPerGal;
+
+  const costUsedWithSubsidy = gallonsWithSubsidy * subsidizedPricePerGal;
+
+  const remainingUsd = amountUsd - costUsedWithSubsidy;
+
+  const gallonsAtNormalPrice =
+    remainingUsd > 0 ? remainingUsd / pricePerGal : 0;
 
   return {
-    Hora: formatTimeHHMM(now),
-    Fecha: formatDateDDMMYYYY(now),
-    Placa: params.plate.trim().toUpperCase(),
-    Conductor: params.driverName?.trim() ?? '',
-    Precio: params.amount.toFixed(2),
-    Tipo_Combustible: params.fuelLabel,
-    Galones: params.gallons.toFixed(2),
-    Tipo_Pago: params.paymentMethod,
-    Subsidio: params.subsidio,
-    Cedula_Ruc: params.cedulaRuc?.trim() ?? '',
-    Modelo_Vehiculo: params.vehicleModel?.trim() ?? '',
-    Color_Vehiculo: params.vehicleColor?.trim() ?? '',
+    totalGallons: Number(
+      (gallonsWithSubsidy + gallonsAtNormalPrice).toFixed(2),
+    ),
+    subsidizedGallons: Number(gallonsWithSubsidy.toFixed(2)),
+    normalGallons: Number(gallonsAtNormalPrice.toFixed(2)),
+    subsidyUsedUsd: Number(subsidyUsedUsd.toFixed(2)),
+    subsidyRemainingUsd: Number(
+      (availableSubsidyUsd - subsidyUsedUsd).toFixed(2),
+    ),
+    monto_iva: Number(monto_iva.toFixed(2)),
+    amountUsd: Number(amountUsd.toFixed(2)),
   };
 }

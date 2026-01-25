@@ -1,10 +1,10 @@
-import TransactionDetail from "@/components/historial/TransactionDetail";
-import TransactionFilters from "@/components/historial/TransactionFilters";
+import TransactionDetail from "@/components/notificacion/TransactionDetail";
+import TransactionFilters from "@/components/notificacion/TransactionFilters";
 import TransactionList, {
   Transaction,
-} from "@/components/historial/TransactionList";
+} from "@/components/notificacion/TransactionList";
 import { useTheme } from "@/context/theme-context";
-import { escucharDespachos } from "@/firebase/database";
+import { escucharAlertas } from "@/firebase/database";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -18,7 +18,7 @@ import {
   View,
 } from "react-native";
 
-export default function HistorialScreen() {
+export default function NotificacionScreen() {
   const { isDark } = useTheme();
 
   const { width } = useWindowDimensions();
@@ -41,23 +41,17 @@ export default function HistorialScreen() {
 
       const cargarDatos = async () => {
         try {
-          const rawData = await escucharDespachos();
+          const rawData = await escucharAlertas();
 
           const cleanData: Transaction[] = rawData.map((item: any) => ({
             id: item.id,
-            monto: item.Precio
-              ? `$${parseFloat(item.Precio).toFixed(2)}`
-              : "$0.00",
-            combustible: item.Tipo_Combustible || "Desconocido",
-            fecha: item.Fecha || "",
-            hora: item.Hora || "",
-            bomba: item.Placa || "N/A",
-            litros: item.Galones ? `${item.Galones} Gal` : "0 Gal",
-            ticket: `#${item.id.slice(-6).toUpperCase()}`,
-            color: getColorByFuel(item.Tipo_Combustible),
-            metodo: item.Tipo_Pago || "Efectivo",
-            propietario: item.Conductor || "Desconocido",
-            cedula: item.Cedula_Ruc || "",
+            fecha: item.fecha || "",
+            hora: item.hora || "",
+            plate: item.plate,
+            message: item.message,
+            galones_pedidos: item.galones_pedidos,
+            galones_maximos: item.galones_maximos,
+            propietario: item.propietario,
           }));
 
           const sortedData = cleanData.reverse();
@@ -109,15 +103,14 @@ export default function HistorialScreen() {
     fechaFin?: Date,
   ) => {
     let filtrados = allTransactions;
+
     // 1. Filtro Texto
     if (textoBusqueda) {
       const lowerText = textoBusqueda.toLowerCase();
       filtrados = filtrados.filter(
         (t) =>
-          t.propietario.toLowerCase().includes(lowerText) ||
-          t.cedula.includes(lowerText) ||
-          t.combustible.toLowerCase().includes(lowerText) ||
-          t.bomba.toLowerCase().includes(lowerText),
+          t.plate.toLowerCase().includes(lowerText) ||
+          t.propietario.toLowerCase().includes(lowerText),
       );
     }
 
@@ -152,7 +145,7 @@ export default function HistorialScreen() {
         <View style={styles.headerContainer}>
           <View>
             <Text style={[styles.headerTitle, { color: titleColor }]}>
-              Historial
+              Notificaciones
             </Text>
           </View>
         </View>
