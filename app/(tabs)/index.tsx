@@ -17,10 +17,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 import { router, useFocusEffect } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -33,6 +36,14 @@ export default function HomeScreen() {
   const { isDark } = useTheme();
   const styles = getStyles(isDark);
 
+  // ←←← ESTADO PARA EL SPLASH / BIENVENIDA
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  // Barra de progreso animada
+  const progress = useRef(new Animated.Value(0)).current;
+  const welcomeDuration = 2500; // mismo tiempo que el setTimeout (en ms)
+  const [percentage, setPercentage] = useState(0);
+
   const [manualPlate, setManualPlate] = useState("");
   const [openCamera, setOpenCamera] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -42,6 +53,34 @@ export default function HomeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
 
   const [listaDespacho, setListaDespacho] = useState<DespachoDTO[]>([]);
+
+  // ←←← Desaparece automáticamente después de X segundos
+  // Animar la barra de progreso + actualizar porcentaje
+  useEffect(() => {
+    if (showWelcome) {
+      // Listener para actualizar el porcentaje en tiempo real
+      const listenerId = progress.addListener(({ value }) => {
+        setPercentage(Math.round(value * 100));
+      });
+
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: welcomeDuration,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      }).start(() => {
+        // Opcional: limpiar al terminar
+        progress.removeListener(listenerId);
+        //si comentamos se queda el modal de carga inicial
+        setShowWelcome(false);
+      });
+
+      // Limpieza al desmontar o cuando showWelcome cambie
+      return () => {
+        progress.removeListener(listenerId);
+      };
+    }
+  }, [showWelcome]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -253,6 +292,123 @@ export default function HomeScreen() {
 
   return (
     <>
+      {/* ←←← MODAL DE BIENVENIDA */}
+      <Modal
+        visible={showWelcome}
+        transparent={false} // fondo negro/opaco completo
+        animationType="fade"
+        statusBarTranslucent={true}
+        onRequestClose={() => setShowWelcome(false)} // Android back button
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: isDark ? "#0F0F11" : "#FFFFFF",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 30,
+          }}
+        >
+          {/* Logo / Imagen */}
+          <View
+            style={{
+              // Contenedor para aplicar la sombra (Image no soporta shadow directamente en Android sin este truco)
+              shadowColor: isDark ? "#00C853" : "#000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: isDark ? 0.3 : 0.3,
+              shadowRadius: 50,
+              elevation: 12, // importante para Android
+              borderRadius: 999, // para que la sombra siga la forma circular si el logo es redondo
+              backgroundColor: isDark ? "#252424" : "#FFFFFF", // fondo sutil detrás si quieres
+              padding: 5, // espacio extra alrededor del logo
+            }}
+          >
+            <Image
+              source={require("@/assets/images/sin_fondo.png")}
+              style={{
+                width: 140,
+                height: 140,
+                resizeMode: "contain",
+              }}
+            />
+          </View>
+
+          {/* Texto de bienvenida */}
+          <Text
+            style={{
+              fontSize: 28,
+              fontWeight: "700",
+              color: isDark ? "#FFFFFF" : "#1A1A1A",
+              marginBottom: 8,
+              marginTop: 30,
+            }}
+          >
+            ECOGAS
+          </Text>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "600",
+              color: isDark ? "#00C853" : "#00C853",
+              marginBottom: 60,
+              marginTop: 10,
+            }}
+          >
+            GESTIÓN DE COMBUSTIBLE
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "700",
+              color: isDark ? "#FFFFFF" : "#333",
+            }}
+          >
+            CARGANDO SISTEMA
+          </Text>
+          {/* Opcional: pequeño loader o texto adicional */}
+          {/* <ActivityIndicator
+            size="large"
+            color="#00C853"
+            style={{ marginTop: 40 }} */}
+          {/* /> */}
+
+          {/* Barra de progreso animada */}
+          <View style={{ marginTop: 15, width: "70%", alignItems: "center" }}>
+            <View
+              style={{
+                width: "100%",
+                height: 8,
+                backgroundColor: isDark ? "#333" : "#E0E0E0",
+                borderRadius: 4,
+                overflow: "hidden",
+              }}
+            >
+              <Animated.View
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "#00C853",
+                  transform: [{ scaleX: progress }],
+                  transformOrigin: "left", // crece desde la izquierda
+                }}
+              />
+            </View>
+
+            {/* Opcional: mostrar porcentaje (puedes quitarlo si no lo quieres) */}
+            <Text
+              style={{
+                marginTop: 8,
+                color: isDark ? "#aaa" : "#555",
+                fontSize: 14,
+                fontWeight: "500",
+              }}
+            >
+              {percentage}%
+            </Text>
+          </View>
+        </View>
+      </Modal>
       <ScrollView
         style={styles.container}
         contentContainerStyle={localStyles.contentContainer}

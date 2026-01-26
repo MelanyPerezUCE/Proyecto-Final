@@ -162,3 +162,28 @@ export const escucharAlertas = () => {
     });
   });
 };
+
+export const agregarCiRuc = async (CiRuc, valor) => {
+  try {
+    const CiRucRef = ref(db, `CedulaRuc/${CiRuc}`);
+    await set(CiRucRef, valor);
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const buscarCiRuc = async (CiRuc) => {
+  try {
+    const dbRef = ref(db);
+    const snapshot = await get(child(dbRef, `CedulaRuc/${CiRuc}`));
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    } else {
+      return null; // no existe
+    }
+  } catch (error) {
+    throw error;
+  }
+};

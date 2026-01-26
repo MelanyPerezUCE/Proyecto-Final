@@ -24,8 +24,10 @@ import { Colors } from "@/constants/theme";
 import { useTheme } from "@/context/theme-context";
 import {
   agregarAlertas,
+  agregarCiRuc,
   agregarDespacho,
   agregarPlaca,
+  buscarCiRuc,
 } from "@/firebase/database";
 import { api_consultarCedula } from "@/services/api_placa";
 import {
@@ -295,15 +297,25 @@ export default function DespachoScreen() {
     if (driverIdForInvoice === "CEDULA" && cleaned.length === 10) {
       debounceTimer.current = setTimeout(async () => {
         setIsCedulaRuc(true);
+        // esto se agrego para guardar la cudula en la base
+        const buscarCedulaRuc = await buscarCiRuc(cleaned);
+        if (buscarCedulaRuc) {
+          setBillingName(buscarCedulaRuc);
+        } else {
+          const consultar_cedula = await api_consultarCedula("cedula", cleaned);
 
-        const consultar_cedula = await api_consultarCedula("cedula", cleaned);
-
-        if (!consultar_cedula) {
-          Alert.alert("Error", "Error al extraer los datos de la Cédula");
-          setIsCedulaRuc(false);
-          return;
+          if (!consultar_cedula) {
+            Alert.alert("Error", "Error al extraer los datos de la Cédula");
+            setIsCedulaRuc(false);
+            return;
+          }
+          setBillingName(consultar_cedula.data.response.nombreCompleto);
+          const guardarCredencial = await agregarCiRuc(
+            cleaned,
+            consultar_cedula.data.response.nombreCompleto,
+          );
         }
-        setBillingName(consultar_cedula.data.response.nombreCompleto);
+
         setIsCedulaRuc(false);
       }, 1500); // 1.5 segundos
     }
@@ -312,15 +324,25 @@ export default function DespachoScreen() {
       debounceTimer.current = setTimeout(async () => {
         setIsCedulaRuc(true);
 
-        const consultar_ruc = await api_consultarCedula("ruc", cleaned);
+        const buscarCedulaRuc = await buscarCiRuc(cleaned);
+        if (buscarCedulaRuc) {
+          setBillingName(buscarCedulaRuc);
+        } else {
+          const consultar_ruc = await api_consultarCedula("ruc", cleaned);
 
-        if (!consultar_ruc) {
-          Alert.alert("Error", "Error al extraer los datos del RUC");
-          setIsCedulaRuc(false);
-          return;
+          if (!consultar_ruc) {
+            Alert.alert("Error", "Error al extraer los datos del RUC");
+            setIsCedulaRuc(false);
+            return;
+          }
+
+          setBillingName(consultar_ruc.data.main[0].razonSocial);
+          const guardarCredencial = await agregarCiRuc(
+            cleaned,
+            consultar_ruc.data.main[0].razonSocial,
+          );
         }
 
-        setBillingName(consultar_ruc.data.main[0].razonSocial);
         setIsCedulaRuc(false);
       }, 1500); // 1.5 segundos
     }
