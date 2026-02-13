@@ -1,4 +1,4 @@
-# Proyecto de Control de Subsidios en Gasolineras
+# Proyecto de Control de Subsidios en Gasolineras (Pantalla de Despachos)
 
 Este es un proyecto desarrollado con [Expo](https://expo.dev) utilizando [`create-expo-app`](https://www.npmjs.com/package/create-expo-app). Está enfocado en el uso en gasolineras para controlar el subsidio de combustible asignado a cada vehículo. Si el vehículo no cuenta con subsidio, se le cobrará el costo real del combustible.
 
